@@ -24,10 +24,11 @@ Append one numbered, dated entry under “项目对话日志” containing:
 - files changed and verification performed when applicable;
 - unresolved limits, decisions, and the next expected milestone.
 
-Keep prior log entries append-only. If an old entry is wrong, append a correction instead of
-silently rewriting history. Long exchanges may be summarized, but do not omit requirements,
-decisions, results, blockers, or information needed to resume the project. Never record secrets,
-credentials, personal tokens, or large unhelpful command outputs.
+Keep prior log entries append-only by default. If the user explicitly requests a context
+compaction, older entries may be replaced by a dated range summary that preserves requirements,
+decisions, results, blockers, and information needed to resume the project; the Git history remains
+the detailed archive. Otherwise, correct old entries by appending rather than silently rewriting.
+Never record secrets, credentials, personal tokens, or large unhelpful command outputs.
 
 When architecture, scope, or verified progress changes, also update the corresponding maintained
 sections near the top of `QA.md`; the chronological log alone is not a substitute for current
@@ -42,4 +43,3 @@ documentation.
 - Do not claim benchmark results that are not reproduced and recorded.
 - Keep external data out of Git by default; commit download provenance and hashes instead.
 - Run proportionate tests, Ruff, and mypy after implementation changes and record the outcome.
-
