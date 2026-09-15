@@ -444,10 +444,12 @@ GitHub noreply 邮箱并重建首个提交。
   未读取或保存密码、Token、验证码等认证秘密。
 - 检查到 `fengmaker/GMRP-ALNS` 尚不存在，按此前约定在 GitHub 创建同名**私有**空仓库，
   未生成远端 README、`.gitignore` 或许可证，避免与本地提交历史冲突。
-- 将远程仓库配置为本地 `origin`，提交 QA-005 和本条对话记录，并把 `main` 分支首次推送
-  到 GitHub。
-- 推送后通过远端分支查询与本地状态检查确认：`origin/main` 已建立并跟踪本地 `main`。
+- 将远程仓库配置为本地 `origin`，并提交 QA-005 和本条对话记录。
+- 多次尝试通过 HTTPS 推送，但本机连接 `github.com:443` 持续超时或被重置；DNS 与 OAuth
+  凭据均正常，因此问题位于网络传输层，不是授权失败。
+- 验证 GitHub 官方备用入口 `ssh.github.com:443` 可以连接。改用该通道需要生成专用 SSH
+  密钥并把公钥加入 GitHub 账户；因为这会新增持久访问凭据，必须先获得用户明确确认。
 
-**当前结论：** 项目已发布到 `https://github.com/fengmaker/GMRP-ALNS`。后续助手可以使用
-Windows Credential Manager 中的授权执行 GitHub HTTPS 推送；Codex 仍可能对网络命令请求
-一次窄范围安全审批，这是执行权限控制，不代表 GitHub 登录失效。
+**当前限制与下一步：** 私有远程仓库 `https://github.com/fengmaker/GMRP-ALNS` 已创建，
+本地 `origin` 也已配置，但代码尚未上传。用户确认新增专用 SSH 密钥后，改走 GitHub 官方
+SSH 443 通道推送，并通过远端分支查询与本地状态检查验证结果。
