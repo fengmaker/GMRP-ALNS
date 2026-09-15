@@ -453,3 +453,27 @@ GitHub noreply 邮箱并重建首个提交。
 **当前限制与下一步：** 私有远程仓库 `https://github.com/fengmaker/GMRP-ALNS` 已创建，
 本地 `origin` 也已配置，但代码尚未上传。用户确认新增专用 SSH 密钥后，改走 GitHub 官方
 SSH 443 通道推送，并通过远端分支查询与本地状态检查验证结果。
+
+## QA-007｜将首次推送操作交还用户
+
+**日期：** 2026-09-15
+
+**用户请求：**
+
+> 用户在 PowerShell 中运行 `git push`，看到当前 `main` 没有 upstream；决定自行操作，
+> 希望助手只提供需要运行的命令。
+
+**助手回应与交接：**
+
+- 停止代为操作 GitHub 页面或 API，不再替用户添加 SSH 公钥或执行推送。
+- 确认本地工作区干净，`origin` 当前为
+  `https://github.com/fengmaker/GMRP-ALNS.git`，`main` 尚未设置 upstream。
+- 说明可先运行 `git push -u origin main`；`-u` 会在首次推送时建立本地 `main` 对
+  `origin/main` 的跟踪关系，以后直接运行 `git push` 即可。
+- 因本机此前直连 `github.com:443` 超时，提供 SSH 443 备用步骤：项目专用密钥已经生成在
+  `C:\Users\86183\.ssh\id_ed25519_gmrp_alns`，用户应只复制 `.pub` 公钥到 GitHub，
+  然后测试连接、把 `origin` 改为 `ssh://git@ssh.github.com:443/fengmaker/GMRP-ALNS.git`
+  并首次推送。
+
+**当前限制与下一步：** 远程仓库仍为空，首次 push 由用户亲自完成。成功标志是命令显示
+`main -> main` 且 `git status -sb` 显示 `main...origin/main`；用户可把终端输出发回以便核验。
