@@ -34,6 +34,13 @@ When architecture, scope, or verified progress changes, also update the correspo
 sections near the top of `QA.md`; the chronological log alone is not a substitute for current
 documentation.
 
+## Git handoff
+
+- The assistant may modify, validate, stage, and commit repository files locally.
+- Do not run `git push` unless the user explicitly asks for a push in the current request.
+- After a local commit, report its hash, how many commits the branch is ahead of its upstream, and
+  the exact push command for the user to run.
+
 ## Engineering principles
 
 - Follow milestones in order unless the user explicitly changes priorities.
