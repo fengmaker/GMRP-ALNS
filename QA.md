@@ -477,3 +477,25 @@ SSH 443 通道推送，并通过远端分支查询与本地状态检查验证结
 
 **当前限制与下一步：** 远程仓库仍为空，首次 push 由用户亲自完成。成功标志是命令显示
 `main -> main` 且 `git status -sb` 显示 `main...origin/main`；用户可把终端输出发回以便核验。
+
+## QA-008｜确认首次推送成功并解释虚拟环境提示
+
+**日期：** 2026-09-15
+
+**用户请求：**
+
+> 用户执行 `git push --set-upstream origin main` 后看到 `main -> main` 和 upstream 提示，
+> 询问是否已经成功，以及 PowerShell 提示符前面的 `(.venv)` 是什么意思。
+
+**助手核验与说明：**
+
+- 本地 `git status -sb` 显示 `main...origin/main`，分支没有领先、落后或未提交文件。
+- 本地 `HEAD`、本地记录的 `origin/main` 和 GitHub 远端 `refs/heads/main` 均指向提交
+  `9ced052f1b409a527f4e6e41fd29a9989be94801`，确认首次推送完整成功。
+- `(.venv)` 表示当前 PowerShell 已激活项目的 Python 虚拟环境；运行 `python`、`pip`、
+  `pytest` 等命令时会优先使用 `D:\GAP\.venv` 内的解释器和依赖，避免污染系统 Python。
+- 虚拟环境与 Git 身份、远端和推送没有关系；可用 `deactivate` 退出，重新进入项目后用
+  `.\.venv\Scripts\Activate.ps1` 再次激活。
+
+**当前结论：** GitHub 私有仓库的 `main` 已建立并跟踪成功，今后在本地提交后通常只需
+运行 `git push`。项目下一阶段仍为 Roadmap 中的 M2（经典 GAP 轨道）。
