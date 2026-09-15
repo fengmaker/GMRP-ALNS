@@ -405,3 +405,49 @@ Changelog 或具体技术文档。
 **当前限制与下一步：** 用户完成 GitHub 登录后，创建目标仓库、配置 `origin` 并推送
 `main`。若仓库公开，现有 Git 作者邮箱会出现在提交元数据中；如需隐藏，应在发布前改用
 GitHub noreply 邮箱并重建首个提交。
+
+## QA-005｜配置可持续的 GitHub 推送权限
+
+**日期：** 2026-09-15
+
+**用户请求：**
+
+> 询问“尚未配置 remote、没有 GitHub CLI、需要登录”具体是什么意思，以及怎样授权，
+> 使助手以后能够代为推送。
+
+**助手回应与执行：**
+
+- 说明 GitHub 身份授权和 Codex 命令审批是两层独立权限：前者证明本机 Git 可以代表用户，
+  后者决定 Codex 何时可以执行带网络访问的 `git push`。
+- 在用户 Windows 账户的 Git Credential Manager 中发现 GitHub 账户 `fengmaker`，但现有
+  凭据已失效，使用 HTTPS 访问 GitHub 时返回认证失败。
+- 启动 Git Credential Manager 的 GitHub device OAuth 重新授权流程；一次性设备代码只
+  在对话中临时展示，不写入仓库。用户需要亲自在 GitHub 页面确认授权，助手不接触密码、
+  Token 或验证码。
+- 授权完成后应验证凭据、创建或确认 `fengmaker/GMRP-ALNS` 远程仓库、配置 `origin`、
+  推送 `main`，并为低风险的 `git push` 命令使用窄范围持久审批，而不是关闭全部安全保护。
+
+**当前限制与下一步：** GitHub device flow 正在等待用户确认。远程仓库仍未创建，当前只有
+本地提交 `bffd990`；本次 QA 追加也将在授权成功后提交并一起推送。
+
+## QA-006｜完成 GitHub 授权与首次推送
+
+**日期：** 2026-09-15
+
+**用户请求：**
+
+> 已授权。
+
+**助手回应与执行：**
+
+- 确认 Git Credential Manager 已保存 GitHub 账户 `fengmaker` 的有效 OAuth 凭据；助手
+  未读取或保存密码、Token、验证码等认证秘密。
+- 检查到 `fengmaker/GMRP-ALNS` 尚不存在，按此前约定在 GitHub 创建同名**私有**空仓库，
+  未生成远端 README、`.gitignore` 或许可证，避免与本地提交历史冲突。
+- 将远程仓库配置为本地 `origin`，提交 QA-005 和本条对话记录，并把 `main` 分支首次推送
+  到 GitHub。
+- 推送后通过远端分支查询与本地状态检查确认：`origin/main` 已建立并跟踪本地 `main`。
+
+**当前结论：** 项目已发布到 `https://github.com/fengmaker/GMRP-ALNS`。后续助手可以使用
+Windows Credential Manager 中的授权执行 GitHub HTTPS 推送；Codex 仍可能对网络命令请求
+一次窄范围安全审批，这是执行权限控制，不代表 GitHub 登录失效。
