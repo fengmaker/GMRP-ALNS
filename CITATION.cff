@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the repository and the ROADEF/EURO 2012 challenge."
+title: "GMRP-ALNS"
+type: software
+version: 0.1.0
+date-released: 2026-09-15
+license: MIT
+authors:
+  - name: "GMRP-ALNS contributors"
+repository-code: "TBD"
+references:
+  - type: generic
+    title: "ROADEF/EURO Challenge 2012: Machine Reassignment"
+    url: "https://roadef.org/challenge/2012/en/"
+

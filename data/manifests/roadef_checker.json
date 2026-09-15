@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://roadef.org/challenge/2012/files/solution_checker/solution_checker.cc",
+    "path": "data/raw/roadef/checker/solution_checker.cc",
+    "bytes": 25849,
+    "sha256": "069038b8a13e62286b77c3ddad074bd4d648db893bcb542d0f906b03f1d56837",
+    "downloaded_at": "2026-09-15T07:19:18.579344+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/solution_checker/solution_checker.h",
+    "path": "data/raw/roadef/checker/solution_checker.h",
+    "bytes": 13247,
+    "sha256": "6c3082d2a148b3056f9d9cf13a2fcdb8f07ba1398ae84bfb09bf544ea5f1608c",
+    "downloaded_at": "2026-09-15T07:19:19.988570+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/solution_checker/solution_checker_run.cc",
+    "path": "data/raw/roadef/checker/solution_checker_run.cc",
+    "bytes": 2127,
+    "sha256": "70aa0fab5e65710d7238d0d096d657e3f51e01f60e64bd3b95db52869655c432",
+    "downloaded_at": "2026-09-15T07:19:21.178105+00:00"
+  }
+]

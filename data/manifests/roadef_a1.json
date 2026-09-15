@@ -1,0 +1,72 @@
+[
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/model_a1_1.txt",
+    "path": "data/raw/roadef/a1/model_a1_1.txt",
+    "bytes": 2389,
+    "sha256": "52dea68d80ea1e529bc5c51e4f6c09ef6d8211a3557ceceeb058bfff6f7459d5",
+    "downloaded_at": "2026-09-15T07:18:49.137870+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/assignment_a1_1.txt",
+    "path": "data/raw/roadef/a1/assignment_a1_1.txt",
+    "bytes": 200,
+    "sha256": "da85d10336623e9bf4adb479e505ccad4921b80d2227ba9b0edce3ac782326ea",
+    "downloaded_at": "2026-09-15T07:18:50.290722+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/model_a1_2.txt",
+    "path": "data/raw/roadef/a1/model_a1_2.txt",
+    "bytes": 62522,
+    "sha256": "9eaedd1aa6464275cf0eee82cc93748f006a5c642e22ea3c9dda67c71f2425b7",
+    "downloaded_at": "2026-09-15T07:18:51.982015+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/assignment_a1_2.txt",
+    "path": "data/raw/roadef/a1/assignment_a1_2.txt",
+    "bytes": 2900,
+    "sha256": "371568eeb8376b564dd160c694a5b70ef0aa1d28177a7f4c6860d1f6c7c41aa5",
+    "downloaded_at": "2026-09-15T07:18:53.133154+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/model_a1_3.txt",
+    "path": "data/raw/roadef/a1/model_a1_3.txt",
+    "bytes": 50863,
+    "sha256": "c1d016d860bc51e4525e37484a7fa3a666d1e5f61b219bd38645e4f73ffd6f53",
+    "downloaded_at": "2026-09-15T07:18:54.801099+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/assignment_a1_3.txt",
+    "path": "data/raw/roadef/a1/assignment_a1_3.txt",
+    "bytes": 2883,
+    "sha256": "e479144d9f405b78de6bdbb26e51a0fa0e4133b3214744359c67bb41e8a09a33",
+    "downloaded_at": "2026-09-15T07:18:55.951887+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/model_a1_4.txt",
+    "path": "data/raw/roadef/a1/model_a1_4.txt",
+    "bytes": 32825,
+    "sha256": "30add81e7d35e8278b76c73a421da2f613239c2985a0371d73250b3580b98265",
+    "downloaded_at": "2026-09-15T07:18:57.416921+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/assignment_a1_4.txt",
+    "path": "data/raw/roadef/a1/assignment_a1_4.txt",
+    "bytes": 2818,
+    "sha256": "a37344ddf5842c25c435ea49c67af11425bbbe4edb062fc7253ec7cc04466ac0",
+    "downloaded_at": "2026-09-15T07:18:58.622489+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/model_a1_5.txt",
+    "path": "data/raw/roadef/a1/model_a1_5.txt",
+    "bytes": 36914,
+    "sha256": "fc45b8a5dd788cf749bb0672662ff9a3b5a3109b305012f68ee6235ca2aa5d71",
+    "downloaded_at": "2026-09-15T07:19:00.089323+00:00"
+  },
+  {
+    "url": "https://roadef.org/challenge/2012/files/data_A_first_part/assignment_a1_5.txt",
+    "path": "data/raw/roadef/a1/assignment_a1_5.txt",
+    "bytes": 2144,
+    "sha256": "105586f5d172c0a533160421b79b5e19a55ada3a911322fddfd8595aacd0a28d",
+    "downloaded_at": "2026-09-15T07:19:01.243337+00:00"
+  }
+]
