@@ -13,8 +13,10 @@ from gmrp_alns.gap.exact import solve_exact
 from gmrp_alns.gap.heuristics import cost_greedy, regret_greedy
 from gmrp_alns.gap.parser import GapParseError, parse_orlib
 from gmrp_alns.gmrp.objective import evaluate_objective
-from gmrp_alns.gmrp.parser import ParseError, parse_assignment, parse_instance
+from gmrp_alns.gmrp.parser import ParseError, parse_assignment, parse_instance, write_assignment
 from gmrp_alns.gmrp.validator import validate
+from gmrp_alns.search.lns import random_lns
+from gmrp_alns.search.local_search import relocate_search, vnd_search
 
 
 def _emit(payload: dict[str, Any], *, stream: Any | None = None) -> None:
@@ -42,6 +44,31 @@ def build_parser() -> argparse.ArgumentParser:
 
     score_command = subparsers.add_parser("score", help="compute official objective components")
     _add_assignment_arguments(score_command)
+
+    solve_command = subparsers.add_parser("solve", help="run a strict-feasible GMRP search")
+    solve_command.add_argument("model", type=Path, help="official model file")
+    solve_command.add_argument("initial", type=Path, help="official original assignment file")
+    solve_command.add_argument(
+        "--algorithm",
+        choices=(
+            "relocate-first",
+            "relocate-best",
+            "vnd-first",
+            "vnd-best",
+            "random-lns-greedy",
+            "random-lns-regret",
+        ),
+        default="vnd-first",
+    )
+    solve_command.add_argument("--time-limit", type=float, default=60.0)
+    solve_command.add_argument("--seed", type=int, default=0)
+    solve_command.add_argument("--max-iterations", type=int)
+    solve_command.add_argument("--top-k", type=int, default=20)
+    solve_command.add_argument("--max-swap-candidates", type=int, default=5_000)
+    solve_command.add_argument("--destroy-size", type=int, default=10)
+    solve_command.add_argument("--repair-top-k", type=int, default=10)
+    solve_command.add_argument("--repair-node-limit", type=int, default=10_000)
+    solve_command.add_argument("--output", type=Path)
 
     gap_command = subparsers.add_parser("gap", help="classic OR-Library GAP track")
     gap_subparsers = gap_command.add_subparsers(dest="gap_command", required=True)
@@ -111,11 +138,65 @@ def _run_gap(args: argparse.Namespace) -> int:
     return 0 if result.feasible else 1
 
 
+def _run_gmrp_solve(args: argparse.Namespace) -> int:
+    instance = parse_instance(args.model)
+    original = parse_assignment(args.initial, instance)
+    common = {
+        "time_limit_seconds": args.time_limit,
+        "seed": args.seed,
+        "max_iterations": args.max_iterations,
+    }
+    if args.algorithm.startswith("relocate-"):
+        result = relocate_search(
+            instance,
+            original,
+            original,
+            strategy=args.algorithm.removeprefix("relocate-"),
+            top_k=args.top_k,
+            **common,
+        )
+    elif args.algorithm.startswith("vnd-"):
+        result = vnd_search(
+            instance,
+            original,
+            original,
+            strategy=args.algorithm.removeprefix("vnd-"),
+            top_k=args.top_k,
+            max_swap_candidates=args.max_swap_candidates,
+            **common,
+        )
+    else:
+        result = random_lns(
+            instance,
+            original,
+            original,
+            repair=args.algorithm.removeprefix("random-lns-"),
+            destroy_size=args.destroy_size,
+            repair_top_k=args.repair_top_k,
+            repair_node_limit=args.repair_node_limit,
+            **common,
+        )
+    if args.output is not None:
+        write_assignment(args.output, result.assignment)
+    payload = result.as_dict(args.model.stem)
+    payload.update(
+        {
+            "model": str(args.model),
+            "initial": str(args.initial),
+            "output": str(args.output) if args.output is not None else None,
+        }
+    )
+    _emit(payload)
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.command == "gap":
             return _run_gap(args)
+        if args.command == "solve":
+            return _run_gmrp_solve(args)
         instance = parse_instance(args.model)
         if args.command == "parse":
             _emit({"model": str(args.model), **instance.summary()})

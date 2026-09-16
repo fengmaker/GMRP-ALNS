@@ -8,10 +8,9 @@
 4. 如何在几分钟内把项目运行起来？
 5. 应该按什么顺序阅读代码，哪些代码最核心？
 
-当前仓库已完成 M0～M3：GMRP 的官方格式解析、完整验证器、完整目标函数、增量
-`relocate`/`swap` 状态，以及经典 GAP 的精确和启发式基线。GMRP 的完整局部搜索与 ALNS
-属于后续 M4～M5；因此当前可以对 GMRP 解进行解析、验证、计分和增量移动，但还没有
-对外提供完整的 GMRP `solve` 命令。
+当前仓库已完成 M0～M4：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
+`relocate`/`swap` 状态，现在还提供 First/Best Improvement、Relocate + Swap VND、Random
+Removal + Greedy/Regret Repair 和统一的 GMRP `solve` 命令。M5 的 Adaptive ALNS 尚未实现。
 
 ---
 
@@ -283,14 +282,23 @@ service、actual 和 limit。
 | 1 | 输入格式合法，但 candidate 不可行 |
 | 2 | 文件无法读取、格式错误、索引越界或其他输入错误 |
 
-### 4.3 实验运行记录
+### 4.3 GMRP 求解输出
 
-未来 M4～M7 的求解命令除了写 candidate solution，还会写包含算法、seed、time limit、
-迭代次数、time to best、目标分量和算子统计的 JSON。生成的运行记录放在
+`solve` 从 initial assignment 开始搜索；`--output` 写出可直接交给官方 checker 的一行
+assignment，同时标准输出给出 JSON。可选算法如下：
+
+- `relocate-first`、`relocate-best`：只使用 relocate 邻域；
+- `vnd-first`、`vnd-best`：在 relocate 局部最优后尝试 swap，成功后回到 relocate；
+- `random-lns-greedy`、`random-lns-regret`：随机移除进程，再以对应策略有界修复。
+
+JSON 包含算法、seed、time limit、迭代次数、候选评估次数、time to best、目标分量、
+算子统计、收敛轨迹和最终 assignment。搜索只接受严格可行的改善解；返回前还会调用完整
+validator 和 objective 复核。生成的批量运行记录应放在
 `results/runs/`，聚合报告放在 `results/report/`；两者默认不提交，冻结实验结果后再按实验
 协议处理。
 
-当前的 M3 性能 JSON 是增量引擎微基准，不是完整的 GMRP 解质量 benchmark。
+M4 的一秒 A 组记录是工程验收，不是完整的 GMRP 解质量 benchmark；详见
+`docs/m4_verification.md`。
 
 ---
 
@@ -358,7 +366,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m mypy
 ```
 
-当前基线是 29 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
+当前 M4 基线是 38 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
 把固定数量写进自动化判断。
 
 ### 6.3 跑通 GMRP toy
@@ -378,6 +386,22 @@ python -m venv .venv
 ```
 
 预期：validation 为 feasible，score 的 `total_cost` 为 `2411`。
+
+再从 initial assignment 搜索并写出候选解：
+
+```powershell
+.\.venv\Scripts\python.exe -m gmrp_alns solve `
+  data/toy/model_toy.txt `
+  data/toy/assignment_toy.txt `
+  --algorithm vnd-best `
+  --time-limit 2 `
+  --seed 42 `
+  --output candidate.sol
+```
+
+预期：`best_cost` 为 `2411`，`candidate.sol` 内容为 `0 2 1`。需要跨机器稳定复现实验
+路径时，同时固定 `--seed` 和 `--max-iterations`；单靠墙钟时限可能因机器速度产生不同的
+截止迭代，耗时字段本身也不要求逐字节相同。
 
 ### 6.4 跑通 GAP toy
 
@@ -428,7 +452,7 @@ candidate solution file ----> parse_assignment() ---> candidate Assignment
                                                     CLI JSON
 ```
 
-### 7.2 后续 GMRP 求解路径
+### 7.2 当前 GMRP 求解路径
 
 ```text
 Instance + original Assignment
@@ -509,26 +533,39 @@ assert_consistent
 `_build_plan` 把一个或两个进程的同时变化汇总成受影响的机器、资源和 service 计数；
 `_constraint_failure` 检查硬约束；`_objective_delta` 只重算受影响部分；`_apply_plan` 更新缓存。
 
-### 第五层：理解外部接口
+### 第五层：理解搜索
 
-15. `src/gmrp_alns/cli.py`
-16. `tests/integration/test_cli.py`
-17. `src/gmrp_alns/gmrp/checker.py`
+15. `src/gmrp_alns/search/local_search.py`
+16. `src/gmrp_alns/search/lns.py`
+17. `src/gmrp_alns/search/common.py`
+18. `src/gmrp_alns/search/model.py`
+19. `tests/unit/test_search.py`
+
+`local_search.py` 负责 First/Best Improvement 和 VND；`lns.py` 负责随机移除及
+greedy/regret 修复；`common.py` 是最终全量复核关口；`model.py` 定义轨迹、算子统计和统一
+结果。M4 仍是 hill-climbing：只接受比当前解更好的严格可行解，还没有 M5 的模拟退火、
+自适应权重或 restart。
+
+### 第六层：理解外部接口
+
+20. `src/gmrp_alns/cli.py`
+21. `tests/integration/test_cli.py`
+22. `src/gmrp_alns/gmrp/checker.py`
 
 CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 checker adapter 只把外部
 可执行程序作为独立进程调用，不把第三方 checker 逻辑混入自研实现。
 
-### 第六层：阅读经典 GAP 轨道
+### 第七层：阅读经典 GAP 轨道
 
-18. `src/gmrp_alns/gap/model.py`
-19. `src/gmrp_alns/gap/parser.py`
-20. `src/gmrp_alns/gap/checker.py`
-21. `src/gmrp_alns/gap/exact.py`
-22. `src/gmrp_alns/gap/heuristics.py`
-23. `tests/unit/test_gap.py`
+23. `src/gmrp_alns/gap/model.py`
+24. `src/gmrp_alns/gap/parser.py`
+25. `src/gmrp_alns/gap/checker.py`
+26. `src/gmrp_alns/gap/exact.py`
+27. `src/gmrp_alns/gap/heuristics.py`
+28. `tests/unit/test_gap.py`
 
 先看 `exact.py` 理解标准 0-1 指派模型，再看 `heuristics.py` 中如何构造、repair、relocate
-和 swap，会比直接进入未来的 GMRP ALNS 更容易。
+和 swap，有助于对照理解 GMRP 搜索中多出的服务约束和迁移成本。
 
 ---
 
@@ -548,8 +585,12 @@ CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 check
 
 | 文件 | 责任 | 为什么核心 |
 |---|---|---|
-| `gmrp/state.py` | 缓存、delta、apply/undo、候选裁剪 | 后续局部搜索和 ALNS 的内层循环 |
+| `gmrp/state.py` | 缓存、delta、apply/undo、候选裁剪 | 局部搜索和后续 ALNS 的内层循环 |
+| `search/local_search.py` | First/Best 与 Relocate/Swap VND | M4 小邻域搜索主循环 |
+| `search/lns.py` | Random Removal 与 Greedy/Regret Repair | M4 大邻域破坏—修复循环 |
+| `search/common.py` | 最终全量复核 | 防止增量错误或修复错误流出求解器 |
 | `tests/unit/test_state.py` | 增量与全量 oracle 对拍 | 防止“跑得快但算错” |
+| `tests/unit/test_search.py` | 搜索可行性、改进性与复现性 | 固化 M4 行为边界 |
 
 ### 9.3 基线与接口核心
 
@@ -565,9 +606,34 @@ CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 check
 
 ---
 
-## 10. 用 Python 直接操作增量状态
+## 10. 用 Python 直接运行搜索或操作增量状态
 
-当前没有完整的 GMRP solve CLI，但可以直接使用 M3 状态引擎：
+应用代码通常直接调用 M4 搜索函数：
+
+```python
+from pathlib import Path
+
+from gmrp_alns.gmrp.parser import parse_assignment, parse_instance, write_assignment
+from gmrp_alns.search.local_search import vnd_search
+
+toy = Path("data/toy")
+instance = parse_instance(toy / "model_toy.txt")
+original = parse_assignment(toy / "assignment_toy.txt", instance)
+
+result = vnd_search(
+    instance,
+    original,
+    original,
+    strategy="best",
+    time_limit_seconds=2,
+    seed=42,
+    max_iterations=100,
+)
+assert result.objective.total_cost == 2411
+write_assignment("candidate.sol", result.assignment)
+```
+
+调试 delta 或新增邻域时，再直接使用 M3 状态引擎：
 
 ```python
 from pathlib import Path
@@ -606,9 +672,8 @@ state.undo_move(move)
 state.assert_consistent()
 ```
 
-真实搜索算法不会只做一次移动，而会在 time limit 内反复生成候选、比较 delta、接受或拒绝
-移动，并始终保存历史最佳可行 assignment。这个循环是 M4 的工作，不应塞进 parser、
-validator 或 objective。
+M4 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta、接受或拒绝移动，并
+始终保留可行 incumbent。这个循环属于 `search/`，不应塞进 parser、validator 或 objective。
 
 ---
 
@@ -620,6 +685,7 @@ validator 或 objective。
 | 任一硬约束 | `test_validator.py`，以及相应 state move 测试 |
 | 任一成本分量 | `test_objective.py`，以及增量 delta 对拍 |
 | Relocate/Swap 缓存 | `test_state.py` 的 full-vs-incremental 与 undo |
+| First/Best、VND、LNS 或 repair | `test_search.py`，并以完整 oracle 复核 |
 | GAP 模型或算法 | `test_gap.py` |
 | CLI 参数或 JSON | `test_cli.py` |
 
@@ -632,7 +698,8 @@ validator 或 objective。
 ```
 
 性能微基准和外部 checker 不放进普通 CI，因为它们依赖外部数据、编译器或特定硬件。对应
-命令与边界见 `docs/m1_verification.md` 和 `docs/m2_m3_verification.md`。
+命令与边界见 `docs/m1_verification.md`、`docs/m2_m3_verification.md` 和
+`docs/m4_verification.md`。
 
 ---
 
@@ -640,12 +707,13 @@ validator 或 objective。
 
 ```text
 src/gmrp_alns/gmrp/   GMRP 领域模型、解析、验证、目标和增量状态
+src/gmrp_alns/search/ GMRP 局部搜索、基础 LNS、统一结果与最终复核
 src/gmrp_alns/gap/    经典 GAP 解析、精确模型和启发式基线
 tests/                 单元测试、性质测试和 CLI 集成测试
 data/toy/              可提交、离线可运行的小实例
 data/raw/              下载的第三方数据，Git 忽略
 data/manifests/        外部数据的来源、时间、大小和 SHA-256
-scripts/               checker 交叉验证、参考值验证、微基准
+scripts/               checker 交叉验证、参考值验证、M4 验收和微基准
 docs/                  数学模型、计划、协议、验证记录和本指南
 configs/               后续实验配置
 results/runs/          后续原始运行记录，Git 忽略
@@ -691,14 +759,15 @@ results/report/        后续聚合报告，Git 忽略
 
 ### “现在能直接跑 GMRP ALNS 吗？”
 
-还不能。M0～M3 已完成，下一阶段 M4 才会把 `SolutionState` 连接到 First/Best
-Improvement、VND 和基础 LNS；M5 再实现 Adaptive ALNS。
+可以运行 M4 的基础 Random LNS，但还不能把它称为完整的 Adaptive ALNS。当前已有
+First/Best Improvement、Relocate + Swap VND、Random Removal 和 Greedy/Regret Repair；
+M5 才会增加多种 destroy/repair、模拟退火、算子评分与权重更新、restart 和历史最佳保护。
 
 ---
 
 ## 14. 继续开发时应守住的边界
 
-未来实现 M4 及之后功能时，保持以下依赖方向：
+实现 M5 及之后功能时，继续保持以下依赖方向：
 
 ```text
 CLI / experiment scripts
@@ -714,5 +783,6 @@ CLI / experiment scripts
 - Solver 只返回 assignment，最终结果必须再次经过全量 validator，必要时再交给官方
   checker。
 
-读完本文后，最推荐的下一步是先运行两组 toy 命令，再依次阅读 `model.py`、`parser.py`、
-`validator.py`、`objective.py` 和对应测试；确认理解完整正确性边界后，再进入 `state.py`。
+读完本文后，最推荐的下一步是先运行 toy 的 validate、score 和 solve，再依次阅读
+`model.py`、`parser.py`、`validator.py`、`objective.py` 和对应测试；确认理解完整正确性
+边界后，再进入 `state.py`、`search/local_search.py` 和 `search/lns.py`。

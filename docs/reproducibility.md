@@ -14,3 +14,10 @@ timestamp, byte size, SHA-256, objective direction, and published reference valu
 `scripts/verify_gap_reference.py` for the exact-baseline cross-check. Incremental performance
 measurements are intentionally separate from CI; commands, environment, results, and timing
 boundaries are recorded in `docs/m2_m3_verification.md`.
+
+M4 search acceptance is reproduced by `scripts/verify_m4_a_set.py`. It writes candidate files only
+inside a temporary directory, rechecks them with the full validator and objective, and then calls
+the unmodified official checker. The recorded one-second A1/A2 development run is documented in
+`docs/m4_verification.md`; it is not a preregistered M7 quality benchmark. For deterministic
+algorithm regression independent of machine speed, use a fixed seed together with
+`--max-iterations`; elapsed-time fields themselves are observational and need not be byte-identical.

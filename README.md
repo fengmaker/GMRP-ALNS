@@ -3,21 +3,23 @@
 GMRP-ALNS is a reproducible research implementation for the
 [ROADEF/EURO Challenge 2012 Machine Reassignment Problem](https://roadef.org/challenge/2012/en/).
 It combines an independently implemented validator and objective evaluator with an incremental
-move engine; local search and adaptive large-neighborhood search are the next stages. A classic
-Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
+move engine, local search, and basic large-neighborhood search. Adaptive ALNS is the next stage.
+A classic Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
 
-> **Status:** pre-alpha, M0–M3 foundation. The GMRP parser, full validator/objective,
-> incremental relocate/swap state, and the classic GAP exact/heuristic track are present.
-> GMRP local search and ALNS remain TBD.
+> **Status:** pre-alpha, M0–M4 complete. The GMRP parser, full validator/objective,
+> incremental relocate/swap state, first/best local search, VND, random-removal LNS, and the
+> classic GAP exact/heuristic track are present. Adaptive ALNS remains TBD.
 
 ## Scope
 
 The current code reads the official integer-stream instance format and assignment format,
 checks capacity, conflict, spread, dependency, and transient-usage constraints, and computes
 all official objective components. Cached GMRP state supports feasibility checks, exact objective
-deltas, apply/undo, and Top-K relocate candidates. The GAP track supports the OR-Library format,
-CP-SAT, cost/regret construction, repair, relocate, and swap. It deliberately does not copy a
-competition entry or claim unmeasured performance.
+deltas, apply/undo, and Top-K relocate candidates. Search supports strict-feasible first/best
+relocate improvement, relocate/swap VND, and random removal with greedy/regret repair, under a
+shared seed and time-limit protocol. The GAP track supports the OR-Library format, CP-SAT,
+cost/regret construction, repair, relocate, and swap. It deliberately does not copy a competition
+entry or claim unmeasured performance.
 
 ## Quick start
 
@@ -36,6 +38,8 @@ Run the bundled official-format toy example:
 gmrp-alns parse data/toy/model_toy.txt
 gmrp-alns validate data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
 gmrp-alns score data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
+gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
+  --algorithm vnd-best --time-limit 2 --seed 42 --output candidate.sol
 gmrp-alns gap parse data/toy/gap_toy.txt --sense minimize
 gmrp-alns gap solve data/toy/gap_toy.txt --sense minimize --algorithm exact --reference-value 8
 ```
@@ -61,6 +65,7 @@ output. No result numbers will be added here before they are reproducible.
 - [Reproducibility](docs/reproducibility.md)
 - [M1 verification record](docs/m1_verification.md)
 - [M2–M3 verification record](docs/m2_m3_verification.md)
+- [M4 verification record](docs/m4_verification.md)
 - [Roadmap](ROADMAP.md)
 - [Third-party sources](THIRD_PARTY.md)
 
@@ -106,3 +111,20 @@ python scripts/benchmark_incremental.py \
 
 This is a development-machine measurement, not a cross-machine performance claim; full details
 and limitations are in the M2–M3 verification record.
+
+## M4 verification
+
+The committed M4 verification command runs one-second seeded VND searches on all local A1/A2
+instances, then checks every emitted assignment with both project oracles and the unmodified
+official checker:
+
+```bash
+python scripts/verify_m4_a_set.py \
+  data/raw/roadef/checker/solution_checker \
+  data/raw/roadef/a1 data/raw/roadef/a2 \
+  --algorithm vnd-first --time-limit 1 --seed 42
+```
+
+The recorded development run improved all ten initial assignments and all ten final objective
+values matched the official checker. This is an M4 acceptance check, not a competitive benchmark;
+see the M4 verification record for the exact results and limitations.

@@ -13,7 +13,9 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
   regret construction, relocate/swap, and unified result JSON.
 - [x] **M3 — GMRP incremental state:** cached state plus relocate/swap delta, apply, undo, and
   randomized comparison against the full evaluator.
-- [ ] **M4 — local search and basic LNS.**
+- [x] **M4 — local search and basic LNS:** seeded first/best relocate search,
+  relocate/swap VND, random removal with greedy/regret repair, telemetry, and official A-set
+  checker verification.
 - [ ] **M5 — adaptive ALNS.**
 - [ ] **M6 — restricted exact repair.**
 - [ ] **M7 — preregistered benchmark and technical report.**

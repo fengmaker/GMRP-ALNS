@@ -58,6 +58,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 - src/gmrp_alns/gap/：经典 GAP 模型、OR-Library 解析、CP-SAT 和启发式基线；
 - src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数、增量状态和 checker 适配；
+- src/gmrp_alns/search/：First/Best 局部搜索、Relocate/Swap VND、Random LNS、repair 与遥测；
 - tests/：单元测试与 CLI 集成测试；
 - data/toy/：可提交的小型官方格式实例；
 - data/raw/：下载的官方数据，默认不提交；
@@ -71,19 +72,23 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0～M3 已完成；
+- M0～M4 已完成；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
 - M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
 - M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
-- 29/29 测试通过，覆盖率 86%，Ruff 与严格 mypy 通过；
+- M4 已实现 First/Best Relocate、Relocate/Swap VND、Random Removal、Greedy/Regret Repair、
+  统一 seed/time limit、收敛轨迹、time-to-best、算子统计和 GMRP `solve` CLI；
+- 38/38 测试通过，覆盖率 87%，Ruff 与严格 mypy 通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
 - 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
 - 10,000 次随机合法 move 的增量值、apply/undo 和全量 oracle 对拍通过；
 - A1_2 的 10,000 次 relocate 开发机复测全部一致，增量评估相对全量重算实测
   111.9389x；该数字仅是有环境和边界说明的本机微基准；
-- 尚未实现 GMRP 局部搜索、LNS、Adaptive ALNS 或 Restricted Repair；
-- 下一里程碑：M4 局部搜索与基础 LNS。
+- M4 `vnd-first` 一秒开发验收在 A1/A2 十个实例上均改善初始成本；所有最终解通过
+  自研 Validator 与官方 checker，十个成本逐一一致；这不是竞争性 benchmark；
+- 尚未实现 Adaptive ALNS 或 Restricted Repair；
+- 下一里程碑：M5 Adaptive ALNS。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
@@ -216,3 +221,30 @@ Validator/官方 checker。
 **验证与下一步：** 已实际复跑 GMRP parse/validate/score 与 GAP parse/exact solve，分别
 得到 feasible、GMRP toy 总成本 2411 和 GAP toy 最优值 8；29 项测试、Ruff、严格 mypy
 及 `git diff --check` 全部通过。算法里程碑仍停在 M3，用户恢复开发时进入 M4。
+
+## QA-016｜完成 M4 局部搜索与基础 LNS
+
+**日期：** 2026-09-17
+
+**用户请求：** “继续 M4”。
+
+**执行结果：**
+
+- 新增独立 `search/` 层，实现 seeded First/Best Relocate、Relocate + Swap VND，以及
+  Random Removal + Greedy/Regret Repair；所有搜索只接受严格可行的改善解，返回前由完整
+  Validator 和 Objective 再次复核；
+- 统一 time limit、iteration limit 和 seed，记录收敛轨迹、time-to-best、候选评估数、
+  目标分量和算子统计；新增 `gmrp-alns solve`，可写官方一行 assignment 并输出 JSON；
+- 增加局部搜索、swap 逃逸、两种 repair、两种 Random LNS 复现性、零迭代及 CLI 输出测试；
+- 新增 `scripts/verify_m4_a_set.py` 和 `docs/m4_verification.md`。seed 42、每实例一秒的
+  `vnd-first` 验收在 A1/A2 全部十个实例上改善初始解；十个最终解均通过自研 Validator
+  和未修改的官方 checker，成本逐一一致；
+- 同步 README、快速上手、复现说明、实验协议、结果边界、ROADMAP 和 CHANGELOG；清理
+  临时候选文件，外部数据与 checker 仍未加入 Git；
+- 完整验证为 38/38 tests、87% coverage、Ruff、严格 mypy（22 个源文件）和
+  `git diff --check` 全部通过。
+
+**限制与下一步：** M4 是 hill-climbing 基线，一秒 A 组运行只用于工程验收，不是竞争性
+解质量结论。跨机器确定性回归应同时固定 seed 与 iteration limit，墙钟耗时字段不要求
+逐字节相同。下一里程碑为 M5：多种 destroy/repair、模拟退火、自适应权重、restart 和
+历史最佳可行解保护。

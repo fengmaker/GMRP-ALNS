@@ -22,3 +22,9 @@ the public API stabilizes.
 - Ten-thousand-move oracle comparison tests and an A-instance incremental evaluation benchmark.
 - Chinese input/output and quick-start guide covering file formats, execution paths, core code,
   reading order, and current project boundaries.
+- Strict-feasible GMRP first/best relocate search and relocate/swap variable-neighborhood descent.
+- Seeded random-removal LNS with bounded greedy or regret repair and incumbent protection.
+- Unified GMRP `solve` CLI with time/iteration limits, official assignment output, convergence
+  traces, time-to-best, objective components, candidate counts, and operator statistics.
+- Reproducible M4 A1/A2 verification script and record; all ten one-second development runs
+  improved their initial assignments and matched the unmodified official checker.
