@@ -286,3 +286,20 @@ Validator/官方 checker。
 存在机器调度波动，确定性回归使用固定 seed 和 iteration limit。B3～B10 未形成 M5 质量
 结论。下一里程碑为 M6：受变量规模和局部时限严格限制的 Restricted CP-SAT Repair，失败时
 必须安全回退并完成启用/关闭消融。
+
+## QA-018｜讲解第一层四个文件与字段映射
+
+**日期：** 2026-09-17
+
+**用户请求：** 暂缓继续里程碑，先按快速上手指南理解第一层四个文件，要求把具体数字与
+代码字段对应讲清楚。
+
+**说明内容：** 逐项解码 `model_toy.txt` 的 2 个 Resource、4 个 Machine、2 个 Service、
+3 个 Process、1 个 BalanceCost 和 3 个全局迁移权重；解释 `assignment_toy.txt=(0,3,0)`
+与 `solution_toy.txt=(0,2,1)` 都按 process 下标保存 machine ID；将其映射到 `model.py` 的
+不可变 dataclass 和 `Assignment` tuple，并用候选解说明 transient 双端容量、service
+conflict/spread/dependency 及 2411 目标值如何使用这些字段。
+
+**变更与下一步：** 本轮不修改算法或里程碑状态，仅追加本日志；未运行测试，因为没有代码
+变更。用户理解第一层后，下一阅读层是 `parser.py` 与 `test_parser.py`，重点是整数流如何
+构造成这些领域对象，以及 parser 负责和不负责哪些验证。
