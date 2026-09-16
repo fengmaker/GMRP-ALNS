@@ -53,6 +53,7 @@ output. No result numbers will be added here before they are reproducible.
 
 ## Project documents
 
+- [中文输入输出与快速上手指南](docs/getting_started_zh.md)
 - [Project knowledge and conversation log](QA.md)
 - [Project plan](docs/project_plan.md)
 - [Mathematical model](docs/mathematical_model.md)

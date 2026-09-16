@@ -20,3 +20,5 @@ the public API stabilizes.
 - Cached GMRP `SolutionState` with incremental relocate/swap feasibility, objective deltas,
   apply/undo, sparse service counts, candidate prefiltering, and Top-K ranking.
 - Ten-thousand-move oracle comparison tests and an A-instance incremental evaluation benchmark.
+- Chinese input/output and quick-start guide covering file formats, execution paths, core code,
+  reading order, and current project boundaries.

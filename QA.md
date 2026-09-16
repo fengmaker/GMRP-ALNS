@@ -194,3 +194,25 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 外部参考验收目前覆盖 `gap1`。下一里程碑按计划进入 M4：基于已验证的增量状态实现
 First/Best Improvement、Relocate+Swap VND 和基础 Random LNS，并保持最终解通过全量
 Validator/官方 checker。
+
+## QA-015｜补充输入输出与快速上手文档
+
+**日期：** 2026-09-16
+
+**用户请求：** 暂停算法开发，编写详细文档解释问题输入输出、如何快速上手、需要阅读和
+重点理解哪些代码，以及哪些文件构成问题输入输出。
+
+**执行结果：**
+
+- 新增 `docs/getting_started_zh.md`，系统说明 GMRP/GAP 的关系、五类硬约束、五类成本、
+  官方整数流 model 格式、initial/candidate assignment 语义、GAP 格式和两类 JSON 输出；
+- 给出 Windows PowerShell 五分钟上手命令、外部数据准备方法、端到端数据流、增量状态
+  Python 示例、代码阅读顺序、核心模块分级、测试映射、目录职责和常见误区；
+- 明确当前能力边界：GMRP 已支持解析、验证、计分和增量移动，但完整 GMRP solve/局部
+  搜索/LNS 尚属 M4；GAP 已支持精确及启发式求解；
+- 在主 README 增加指南入口，修正 `results/README.md` 对 M3 微基准与解质量 benchmark
+  的区分，并在 CHANGELOG 登记文档。
+
+**验证与下一步：** 已实际复跑 GMRP parse/validate/score 与 GAP parse/exact solve，分别
+得到 feasible、GMRP toy 总成本 2411 和 GAP toy 最优值 8；29 项测试、Ruff、严格 mypy
+及 `git diff --check` 全部通过。算法里程碑仍停在 M3，用户恢复开发时进入 M4。
