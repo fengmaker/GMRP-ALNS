@@ -39,3 +39,32 @@ def test_validate_infeasible_returns_one(toy_dir: Path, tmp_path: Path, capsys: 
     assert exit_code == 1
     assert not json.loads(capsys.readouterr().out)["feasible"]  # type: ignore[attr-defined]
 
+
+def test_gap_parse_and_solve_commands(toy_dir: Path, capsys: object) -> None:
+    data = str(toy_dir / "gap_toy.txt")
+    assert main(["gap", "parse", data, "--sense", "minimize"]) == 0
+    parsed = json.loads(capsys.readouterr().out)  # type: ignore[attr-defined]
+    assert parsed["instances"][0]["jobs"] == 4
+
+    assert (
+        main(
+            [
+                "gap",
+                "solve",
+                data,
+                "--sense",
+                "minimize",
+                "--algorithm",
+                "exact",
+                "--seed",
+                "42",
+                "--reference-value",
+                "8",
+            ]
+        )
+        == 0
+    )
+    solved = json.loads(capsys.readouterr().out)  # type: ignore[attr-defined]
+    assert solved["feasible"]
+    assert solved["optimal"]
+    assert solved["matches_reference"]

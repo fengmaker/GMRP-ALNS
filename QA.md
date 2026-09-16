@@ -56,7 +56,8 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 3. 仓库结构速查
 
-- src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数和 checker 适配；
+- src/gmrp_alns/gap/：经典 GAP 模型、OR-Library 解析、CP-SAT 和启发式基线；
+- src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数、增量状态和 checker 适配；
 - tests/：单元测试与 CLI 集成测试；
 - data/toy/：可提交的小型官方格式实例；
 - data/raw/：下载的官方数据，默认不提交；
@@ -70,13 +71,19 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0 仓库工程基础完成；
+- M0～M3 已完成；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
-- 19/19 测试通过，覆盖率 92%，Ruff 与严格 mypy 通过；
+- M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
+- M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
+- 29/29 测试通过，覆盖率 86%，Ruff 与严格 mypy 通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
-- 尚未实现搜索求解器、经典 GAP Track、增量状态或 ALNS；
-- 下一里程碑：M2 经典 GAP Track。
+- 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
+- 10,000 次随机合法 move 的增量值、apply/undo 和全量 oracle 对拍通过；
+- A1_2 的 10,000 次 relocate 开发机复测全部一致，增量评估相对全量重算实测
+  111.9389x；该数字仅是有环境和边界说明的本机微基准；
+- 尚未实现 GMRP 局部搜索、LNS、Adaptive ALNS 或 Restricted Repair；
+- 下一里程碑：M4 局部搜索与基础 LNS。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
@@ -161,3 +168,29 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 **结论：** 结合用户和助手此前都曾通过同一 HTTPS remote 成功推送，最可能是间歇性的
 网络路由、出口或 GitHub CDN 端点连通问题。继续维持 HTTPS 配置，失败时稍后重试或切换
 网络；不随意修改 hosts，也不把 SSH 设为当前必需项。助手只记录并本地 commit，不 push。
+
+## QA-014｜完成 M2 经典 GAP 与 M3 GMRP 增量状态
+
+**日期：** 2026-09-16
+
+**用户请求：** 阅读 QA、README、AGENTS 等文档，继续完成 M2 和 M3。
+
+**执行结果：**
+
+- 完整复核项目计划与当前干净工作树，先确认 M1 的 19 项测试、Ruff 和 mypy 基线通过；
+- 新增独立 GAP 分层：严格 OR-Library 多实例解析、显式最小化/最大化方向、CP-SAT 精确
+  模型、cost/regret greedy、容量修复、relocate/swap 局部搜索及 JSON CLI；
+- 下载被忽略的官方 `gap1`，提交来源/哈希清单；五个实例的精确结果分别为
+  336、327、339、341、326，全部匹配 OR-Library 最大化参考值；
+- 新增 GMRP `SolutionState`，缓存资源、瞬时资源、服务机器/位置/邻域稀疏计数、服务迁移
+  计数和完整目标；实现 relocate/swap 的合法性、目标 delta、apply/undo、预筛与 Top-K；
+- 10,000 次 seeded 合法移动逐次对拍全量 objective/validator，并验证完整快照恢复；A1_2
+  另做 10,000 次 relocate 对拍，全部一致，本机测得 111.9389x 候选评估加速；
+- 新增可复现下载、参考值验证和增量微基准脚本，更新 README、数据说明、第三方记录、
+  复现说明、路线图、变更日志及 M2/M3 验证记录；
+- 最终验证：29 项测试全部通过，覆盖率 86%，Ruff 与严格 mypy 通过。
+
+**限制与下一步：** 性能数据仅覆盖一次本机 A1_2 微基准，不代表完整实验结论；GAP
+外部参考验收目前覆盖 `gap1`。下一里程碑按计划进入 M4：基于已验证的增量状态实现
+First/Best Improvement、Relocate+Swap VND 和基础 Random LNS，并保持最终解通过全量
+Validator/官方 checker。

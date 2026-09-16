@@ -17,7 +17,9 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Topic :: Scientific/Engineering :: Mathematics",
 ]
-dependencies = []
+dependencies = [
+  "ortools>=9.10,<10",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -51,3 +53,7 @@ strict = true
 packages = ["gmrp_alns"]
 mypy_path = "src"
 
+[[tool.mypy.overrides]]
+module = ["ortools.*"]
+follow_imports = "skip"
+ignore_missing_imports = true

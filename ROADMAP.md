@@ -9,9 +9,9 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
   and focused unit/integration tests.
 - [x] **M1 cross-check — official A data/checker:** download A1/A2 and checker source, record
   hashes, and compare all ten initial assignments and objective values with the official checker.
-- [ ] **M2 — classic GAP track:** OR-Library parser, exact small-instance baseline, greedy and
+- [x] **M2 — classic GAP track:** OR-Library parser, exact small-instance baseline, greedy and
   regret construction, relocate/swap, and unified result JSON.
-- [ ] **M3 — GMRP incremental state:** cached state plus relocate/swap delta, apply, undo, and
+- [x] **M3 — GMRP incremental state:** cached state plus relocate/swap delta, apply, undo, and
   randomized comparison against the full evaluator.
 - [ ] **M4 — local search and basic LNS.**
 - [ ] **M5 — adaptive ALNS.**

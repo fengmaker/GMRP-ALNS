@@ -1,0 +1,19 @@
+{
+  "dataset": "gap1",
+  "sense": "maximize",
+  "reference_values": [
+    336,
+    327,
+    339,
+    341,
+    326
+  ],
+  "source_format": "OR-Library GAP multi-instance integer stream",
+  "file": {
+    "url": "https://people.brunel.ac.uk/~mastjjb/jeb/orlib/files/gap1.txt",
+    "path": "data/raw/orlib/gap1.txt",
+    "bytes": 2336,
+    "sha256": "3395ba9f775d5a608ad107e946021a89688bc0d62b5a5c07585744ea98b1d706",
+    "downloaded_at": "2026-09-16T15:26:05.029087+00:00"
+  }
+}
