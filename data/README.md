@@ -26,6 +26,7 @@ Reproducible downloads:
 
 ```text
 python data/download_roadef.py a1
+python data/download_roadef.py b --resume
 python data/download_orlib.py gap1
 ```
 
@@ -34,3 +35,7 @@ explicitly reviewed. Each download command writes a manifest containing source U
 UTC download timestamp, byte size, and SHA-256 digest. Version-controlled manifests live in
 `manifests/`, while the artifacts themselves remain ignored. Never modify an official instance
 while retaining its official name or reference result.
+
+`--resume` reuses non-empty completed files and rebuilds manifest records; new downloads are first
+written to a `.part` file and atomically renamed, so interrupted transfers are not mistaken for
+complete artifacts.

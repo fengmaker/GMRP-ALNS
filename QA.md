@@ -58,7 +58,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 - src/gmrp_alns/gap/：经典 GAP 模型、OR-Library 解析、CP-SAT 和启发式基线；
 - src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数、增量状态和 checker 适配；
-- src/gmrp_alns/search/：First/Best 局部搜索、Relocate/Swap VND、Random LNS、repair 与遥测；
+- src/gmrp_alns/search/：局部搜索、基础 LNS、Adaptive ALNS、destroy/repair、接受与权重；
 - tests/：单元测试与 CLI 集成测试；
 - data/toy/：可提交的小型官方格式实例；
 - data/raw/：下载的官方数据，默认不提交；
@@ -72,13 +72,15 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0～M4 已完成；
+- M0～M5 已完成；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
 - M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
 - M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
 - M4 已实现 First/Best Relocate、Relocate/Swap VND、Random Removal、Greedy/Regret Repair、
   统一 seed/time limit、收敛轨迹、time-to-best、算子统计和 GMRP `solve` CLI；
-- 38/38 测试通过，覆盖率 87%，Ruff 与严格 mypy 通过；
+- M5 已实现五种 destroy、三种 strict-feasible repair、模拟退火、分段自适应权重、时限内
+  relocate warm start、restart、历史最佳保护、权重历史和目标分量轨迹；
+- 49/49 测试通过，覆盖率 87%，Ruff 与严格 mypy 通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
 - 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
@@ -87,8 +89,12 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
   111.9389x；该数字仅是有环境和边界说明的本机微基准；
 - M4 `vnd-first` 一秒开发验收在 A1/A2 十个实例上均改善初始成本；所有最终解通过
   自研 Validator 与官方 checker，十个成本逐一一致；这不是竞争性 benchmark；
-- 尚未实现 Adaptive ALNS 或 Restricted Repair；
-- 下一里程碑：M5 Adaptive ALNS。
+- M5 冻结开发门在三实例、三 seed 的九组配对中相对 Random LNS 获得 6 胜 1 平 2 负，
+  汇总目标低 416,047,975；18 个输出均通过官方 checker；该开发集参与过 warm-start 调整，
+  不能作为最终泛化结论；
+- Adaptive ALNS 一秒验收在 A1/A2 十个实例及 B1/B2 上均改善初始解并通过官方 checker；
+  完整 B 数据的来源与 SHA-256 已记录，但其余 B 实例留待 M7 冻结实验；
+- 尚未实现 Restricted Repair；下一里程碑：M6 Restricted MIP/CP-SAT Repair。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
@@ -248,3 +254,35 @@ Validator/官方 checker。
 解质量结论。跨机器确定性回归应同时固定 seed 与 iteration limit，墙钟耗时字段不要求
 逐字节相同。下一里程碑为 M5：多种 destroy/repair、模拟退火、自适应权重、restart 和
 历史最佳可行解保护。
+
+## QA-017｜完成 M5 Adaptive ALNS
+
+**日期：** 2026-09-17
+
+**用户请求：** “继续 M5”。
+
+**执行结果：**
+
+- 新增 `acceptance.py`、`operator_selection.py`、`destroy.py` 和 `alns.py`；实现 random、
+  high-load、resource-critical、related-service、high-move-gain 五种 destroy，以及 greedy、
+  regret、seeded randomized 三种严格可行 repair；
+- 实现从初始成本拟合的模拟退火、分段反应权重、轮盘赌选择、无全局改善 restart、历史
+  最佳可行解保护，以及总时限内 20% relocate warm start；Penalty Search 未以弱化版本冒充，
+  当前明确输出 `strict_feasible=true`；
+- 扩展 JSON 遥测：接受/失败/新最佳次数、候选数、算子耗时与贡献、最终权重、权重历史，
+  以及每个接受状态的完整目标分量；CLI 新增 `adaptive-alns` 与相关参数；
+- 冻结三 A 实例 × 三 seed × 每方法一秒的开发配置。初版无 warm start 仅 4/9 胜并被记录
+  为未通过；revision 2 保持实例、seed、总时限和门槛不变，加入时限内 warm start 后达到
+  6 胜 1 平 2 负，汇总目标比 Random LNS 低 416,047,975，18 个解均通过官方 checker；
+- Adaptive ALNS 在 A1/A2 十个实例和 B1/B2 上各用 seed 42、一秒运行，12 个最终解全部
+  改善初始解并与官方 checker 成本一致；下载完整 B 组到忽略目录并提交 20 个文件的来源、
+  大小和 SHA-256 清单；下载器增加原子 `.part` 写入与 `--resume`；
+- 新增 M5 单元/CLI 测试、两个验收脚本和 `docs/m5_verification.md`，并同步 README、快速
+  上手、复现说明、实验协议、结果边界、ROADMAP 和 CHANGELOG；
+- 完整验证为 49/49 tests、87% coverage、Ruff、严格 mypy（26 个源文件）和
+  `git diff --check` 全部通过。
+
+**限制与下一步：** M5 结果是参与过参数调整的工程开发门，不是 M7 benchmark；墙钟运行
+存在机器调度波动，确定性回归使用固定 seed 和 iteration limit。B3～B10 未形成 M5 质量
+结论。下一里程碑为 M6：受变量规模和局部时限严格限制的 Restricted CP-SAT Repair，失败时
+必须安全回退并完成启用/关闭消融。

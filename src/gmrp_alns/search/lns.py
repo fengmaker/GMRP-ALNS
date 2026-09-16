@@ -14,7 +14,7 @@ from gmrp_alns.gmrp.validator import validate
 from gmrp_alns.search.common import build_result
 from gmrp_alns.search.model import OperatorStats, SearchResult, TracePoint
 
-RepairStrategy = Literal["greedy", "regret"]
+RepairStrategy = Literal["greedy", "regret", "randomized"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -210,11 +210,14 @@ def repair_removed(
     deadline: float,
     top_k: int = 10,
     node_limit: int = 10_000,
+    rng: random.Random | None = None,
 ) -> RepairOutcome:
     """Repair a random-removal neighborhood with bounded fail-first backtracking."""
 
-    if strategy not in ("greedy", "regret"):
+    if strategy not in ("greedy", "regret", "randomized"):
         raise ValueError(f"unknown repair strategy: {strategy}")
+    if strategy == "randomized" and rng is None:
+        raise ValueError("randomized repair requires an explicit random generator")
     if top_k <= 0 or node_limit <= 0:
         raise ValueError("top_k and node_limit must be positive")
     if len(set(removed_processes)) != len(removed_processes):
@@ -279,6 +282,11 @@ def repair_removed(
                     -float(process),
                 )
                 better = selected_key is None or candidate_key > selected_key
+            elif strategy == "randomized":
+                if rng is None:  # pragma: no cover - guarded above
+                    raise AssertionError("randomized repair lost its random generator")
+                candidate_key = (float(len(limited)), rng.random())
+                better = selected_key is None or candidate_key < selected_key
             else:
                 candidate_key = (float(limited[0].delta), float(process))
                 better = selected_key is None or candidate_key < selected_key
@@ -287,6 +295,10 @@ def repair_removed(
                 selected_options = limited
                 selected_key = candidate_key
 
+        if strategy == "randomized":
+            if rng is None:  # pragma: no cover - guarded above
+                raise AssertionError("randomized repair lost its random generator")
+            rng.shuffle(selected_options)
         remaining.remove(selected_process)
         for option in selected_options:
             partial.apply(selected_process, option.machine)

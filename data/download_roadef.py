@@ -23,11 +23,13 @@ def _download(url: str, destination: Path) -> dict[str, object]:
     destination.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
     size = 0
-    with urllib.request.urlopen(url, timeout=60) as response, destination.open("wb") as output:
+    partial = destination.with_suffix(destination.suffix + ".part")
+    with urllib.request.urlopen(url, timeout=60) as response, partial.open("wb") as output:
         while chunk := response.read(1024 * 1024):
             output.write(chunk)
             digest.update(chunk)
             size += len(chunk)
+    partial.replace(destination)
     return {
         "url": url,
         "path": destination.relative_to(PROJECT_ROOT).as_posix(),
@@ -37,12 +39,34 @@ def _download(url: str, destination: Path) -> dict[str, object]:
     }
 
 
+def _record_existing(url: str, destination: Path) -> dict[str, object]:
+    digest = hashlib.sha256()
+    size = 0
+    with destination.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+            size += len(chunk)
+    return {
+        "url": url,
+        "path": destination.relative_to(PROJECT_ROOT).as_posix(),
+        "bytes": size,
+        "sha256": digest.hexdigest(),
+        "downloaded_at": datetime.now(UTC).isoformat(),
+        "reused_existing": True,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset", choices=[*DATASETS, "checker"])
     parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "data" / "raw" / "roadef")
     parser.add_argument(
         "--manifest-directory", type=Path, default=PROJECT_ROOT / "data" / "manifests"
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="reuse non-empty completed files and rebuild their manifest records",
     )
     args = parser.parse_args()
 
@@ -62,7 +86,10 @@ def main() -> int:
                 filename = f"{prefix}_{args.dataset}_{index}.txt"
                 url = f"{BASE_URL}/{directory}/{filename}"
                 destination = args.output / args.dataset / filename
-                records.append(_download(url, destination))
+                if args.resume and destination.exists() and destination.stat().st_size > 0:
+                    records.append(_record_existing(url, destination))
+                else:
+                    records.append(_download(url, destination))
 
     manifest_path = args.manifest_directory / f"roadef_{args.dataset}.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)

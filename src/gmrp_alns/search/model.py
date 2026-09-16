@@ -16,9 +16,16 @@ class TracePoint:
     current_cost: int
     best_cost: int
     operator: str
+    current_objective: ObjectiveBreakdown | None = None
+    objective_component_delta: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["current_objective_components"] = (
+            self.current_objective.as_dict() if self.current_objective is not None else None
+        )
+        payload.pop("current_objective")
+        return payload
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +35,11 @@ class OperatorStats:
     candidate_evaluations: int
     total_improvement: int
     wall_time_seconds: float
+    accepted: int = 0
+    new_best: int = 0
+    failures: int = 0
+    final_weight: float | None = None
+    weight_updates: int = 0
 
     def as_dict(self) -> dict[str, int | float]:
         return asdict(self)

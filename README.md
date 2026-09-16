@@ -3,12 +3,13 @@
 GMRP-ALNS is a reproducible research implementation for the
 [ROADEF/EURO Challenge 2012 Machine Reassignment Problem](https://roadef.org/challenge/2012/en/).
 It combines an independently implemented validator and objective evaluator with an incremental
-move engine, local search, and basic large-neighborhood search. Adaptive ALNS is the next stage.
+move engine, local search, basic LNS, and adaptive large-neighborhood search. Restricted exact
+repair is the next stage.
 A classic Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
 
-> **Status:** pre-alpha, M0–M4 complete. The GMRP parser, full validator/objective,
-> incremental relocate/swap state, first/best local search, VND, random-removal LNS, and the
-> classic GAP exact/heuristic track are present. Adaptive ALNS remains TBD.
+> **Status:** pre-alpha, M0–M5 complete. The GMRP parser, full validator/objective,
+> incremental relocate/swap state, first/best local search, VND, random-removal LNS, Adaptive
+> ALNS, and the classic GAP exact/heuristic track are present. Restricted exact repair remains TBD.
 
 ## Scope
 
@@ -16,8 +17,9 @@ The current code reads the official integer-stream instance format and assignmen
 checks capacity, conflict, spread, dependency, and transient-usage constraints, and computes
 all official objective components. Cached GMRP state supports feasibility checks, exact objective
 deltas, apply/undo, and Top-K relocate candidates. Search supports strict-feasible first/best
-relocate improvement, relocate/swap VND, and random removal with greedy/regret repair, under a
-shared seed and time-limit protocol. The GAP track supports the OR-Library format, CP-SAT,
+relocate improvement, relocate/swap VND, random removal, and Adaptive ALNS with five destroy and
+three repair operators, simulated annealing, adaptive weights, and restart under a shared seed and
+time-limit protocol. The GAP track supports the OR-Library format, CP-SAT,
 cost/regret construction, repair, relocate, and swap. It deliberately does not copy a competition
 entry or claim unmeasured performance.
 
@@ -39,7 +41,7 @@ gmrp-alns parse data/toy/model_toy.txt
 gmrp-alns validate data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
 gmrp-alns score data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
 gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
-  --algorithm vnd-best --time-limit 2 --seed 42 --output candidate.sol
+  --algorithm adaptive-alns --time-limit 2 --seed 42 --output candidate.sol
 gmrp-alns gap parse data/toy/gap_toy.txt --sense minimize
 gmrp-alns gap solve data/toy/gap_toy.txt --sense minimize --algorithm exact --reference-value 8
 ```
@@ -66,6 +68,7 @@ output. No result numbers will be added here before they are reproducible.
 - [M1 verification record](docs/m1_verification.md)
 - [M2–M3 verification record](docs/m2_m3_verification.md)
 - [M4 verification record](docs/m4_verification.md)
+- [M5 verification record](docs/m5_verification.md)
 - [Roadmap](ROADMAP.md)
 - [Third-party sources](THIRD_PARTY.md)
 
@@ -128,3 +131,21 @@ python scripts/verify_m4_a_set.py \
 The recorded development run improved all ten initial assignments and all ten final objective
 values matched the official checker. This is an M4 acceptance check, not a competitive benchmark;
 see the M4 verification record for the exact results and limitations.
+
+## M5 verification
+
+The frozen M5 development configuration compares Random LNS and Adaptive ALNS over three A
+instances and three seeds under equal one-second budgets. The recorded run produced six Adaptive
+ALNS wins in nine pairs and a 416,047,975 lower summed objective; all 18 assignments passed the
+official checker. A separate feasibility gate verified all ten A1/A2 instances plus B1/B2:
+
+```bash
+python scripts/verify_m5_development.py configs/m5_development.json \
+  data/raw/roadef/checker/solution_checker data/raw/roadef
+python scripts/verify_m5_feasibility.py \
+  data/raw/roadef/checker/solution_checker data/raw/roadef/b \
+  --time-limit 1 --seed 42 --instances b_1 b_2
+```
+
+These are machine-dependent M5 engineering gates, not the preregistered M7 benchmark. See the M5
+verification record for the frozen criteria, configuration revision, results, and limitations.

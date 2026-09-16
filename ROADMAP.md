@@ -16,7 +16,9 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
 - [x] **M4 — local search and basic LNS:** seeded first/best relocate search,
   relocate/swap VND, random removal with greedy/regret repair, telemetry, and official A-set
   checker verification.
-- [ ] **M5 — adaptive ALNS.**
+- [x] **M5 — adaptive ALNS:** five destroy and three strict-feasible repair operators,
+  simulated annealing, segmented adaptive weights, best-solution restart/protection, telemetry,
+  paired development comparison, and A/B official-checker validation.
 - [ ] **M6 — restricted exact repair.**
 - [ ] **M7 — preregistered benchmark and technical report.**
 - [ ] **M8 — public release and evidence-backed project summary.**

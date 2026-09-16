@@ -28,3 +28,10 @@ the public API stabilizes.
   traces, time-to-best, objective components, candidate counts, and operator statistics.
 - Reproducible M4 A1/A2 verification script and record; all ten one-second development runs
   improved their initial assignments and matched the unmodified official checker.
+- Adaptive ALNS with five destroy operators, three strict-feasible repair operators, simulated
+  annealing, segmented roulette weights, in-budget relocate warm start, restart, and historical
+  best protection.
+- Per-operator acceptance/best/failure/timing/weight statistics, weight history, and objective
+  component traces exposed through the GMRP JSON result.
+- Frozen M5 paired-development and A/B feasibility scripts, complete official B-set provenance,
+  and official-checker verification records.

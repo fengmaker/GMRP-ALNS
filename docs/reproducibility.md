@@ -21,3 +21,10 @@ the unmodified official checker. The recorded one-second A1/A2 development run i
 `docs/m4_verification.md`; it is not a preregistered M7 quality benchmark. For deterministic
 algorithm regression independent of machine speed, use a fixed seed together with
 `--max-iterations`; elapsed-time fields themselves are observational and need not be byte-identical.
+
+M5 adds two separate gates. `scripts/verify_m5_development.py` consumes the version-controlled
+`configs/m5_development.json` paired comparison; `scripts/verify_m5_feasibility.py` checks Adaptive
+ALNS outputs with the unmodified official checker over declared A/B instances. Exact recorded
+results, the failed first configuration revision, and the in-budget warm-start revision are in
+`docs/m5_verification.md`. These development-set observations are explicitly excluded from M7's
+future reportable benchmark evidence.

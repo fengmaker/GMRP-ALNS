@@ -15,6 +15,7 @@ from gmrp_alns.gap.parser import GapParseError, parse_orlib
 from gmrp_alns.gmrp.objective import evaluate_objective
 from gmrp_alns.gmrp.parser import ParseError, parse_assignment, parse_instance, write_assignment
 from gmrp_alns.gmrp.validator import validate
+from gmrp_alns.search.alns import adaptive_alns
 from gmrp_alns.search.lns import random_lns
 from gmrp_alns.search.local_search import relocate_search, vnd_search
 
@@ -57,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
             "vnd-best",
             "random-lns-greedy",
             "random-lns-regret",
+            "adaptive-alns",
         ),
         default="vnd-first",
     )
@@ -68,6 +70,13 @@ def build_parser() -> argparse.ArgumentParser:
     solve_command.add_argument("--destroy-size", type=int, default=10)
     solve_command.add_argument("--repair-top-k", type=int, default=10)
     solve_command.add_argument("--repair-node-limit", type=int, default=10_000)
+    solve_command.add_argument("--segment-length", type=int, default=25)
+    solve_command.add_argument("--reaction-factor", type=float, default=0.2)
+    solve_command.add_argument("--target-acceptance", type=float, default=0.5)
+    solve_command.add_argument("--initial-worsening-fraction", type=float, default=0.01)
+    solve_command.add_argument("--cooling-rate", type=float, default=0.995)
+    solve_command.add_argument("--restart-interval", type=int, default=200)
+    solve_command.add_argument("--warm-start-fraction", type=float, default=0.2)
     solve_command.add_argument("--output", type=Path)
 
     gap_command = subparsers.add_parser("gap", help="classic OR-Library GAP track")
@@ -165,7 +174,7 @@ def _run_gmrp_solve(args: argparse.Namespace) -> int:
             max_swap_candidates=args.max_swap_candidates,
             **common,
         )
-    else:
+    elif args.algorithm.startswith("random-lns-"):
         result = random_lns(
             instance,
             original,
@@ -174,6 +183,23 @@ def _run_gmrp_solve(args: argparse.Namespace) -> int:
             destroy_size=args.destroy_size,
             repair_top_k=args.repair_top_k,
             repair_node_limit=args.repair_node_limit,
+            **common,
+        )
+    else:
+        result = adaptive_alns(
+            instance,
+            original,
+            original,
+            destroy_size=args.destroy_size,
+            repair_top_k=args.repair_top_k,
+            repair_node_limit=args.repair_node_limit,
+            segment_length=args.segment_length,
+            reaction_factor=args.reaction_factor,
+            target_acceptance_probability=args.target_acceptance,
+            initial_worsening_fraction=args.initial_worsening_fraction,
+            cooling_rate=args.cooling_rate,
+            restart_interval=args.restart_interval,
+            warm_start_fraction=args.warm_start_fraction,
             **common,
         )
     if args.output is not None:

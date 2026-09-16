@@ -1,0 +1,31 @@
+{
+  "frozen_at": "2026-09-17",
+  "revision": 2,
+  "revision_note": "v1 missed the paired-win gate; v2 adds an in-budget relocate warm start while retaining the same instances, seeds, and total time",
+  "purpose": "M5 engineering acceptance; not the M7 benchmark",
+  "instances": ["a1_1", "a1_2", "a1_4"],
+  "seeds": [7, 42, 101],
+  "time_limit_seconds": 1.0,
+  "baseline": {
+    "algorithm": "random-lns-greedy",
+    "destroy_size": 10,
+    "repair_top_k": 10,
+    "repair_node_limit": 10000
+  },
+  "adaptive_alns": {
+    "destroy_size": 10,
+    "repair_top_k": 10,
+    "repair_node_limit": 10000,
+    "segment_length": 25,
+    "reaction_factor": 0.2,
+    "target_acceptance_probability": 0.5,
+    "initial_worsening_fraction": 0.01,
+    "cooling_rate": 0.995,
+    "restart_interval": 200,
+    "warm_start_fraction": 0.2
+  },
+  "acceptance": {
+    "minimum_paired_wins": 6,
+    "require_lower_total_cost": true
+  }
+}
