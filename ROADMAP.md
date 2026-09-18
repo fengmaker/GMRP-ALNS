@@ -22,5 +22,8 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
 - [x] **M6 — restricted exact repair:** fixed-complement CP-SAT neighborhoods, exact hard
   constraints and objective, strict local time/assignment-variable limits, verified safe fallback,
   telemetry, official-checker cross-checks, and an enable/disable development ablation.
-- [ ] **M7 — preregistered benchmark and technical report.**
+- [x] **M7 — preregistered benchmark and technical report:** frozen 660-observation A/B
+  short-budget matrix, isolated/resumable workers, official-checker audit, raw JSONL and aggregate
+  CSV/JSON, paired held-out/ablation analysis, generated figures, separate profile, checksums, and
+  documented timing limitations and negative results.
 - [ ] **M8 — public release and evidence-backed project summary.**

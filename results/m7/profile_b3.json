@@ -1,0 +1,281 @@
+{
+  "git_commit": "ee29875c39c111c0b2a651e56450829b6f376599",
+  "model_sha256": "e11f06e5559ca7b05cff4426f920556984a70a284283a7d2c101644902ee0d64",
+  "initial_sha256": "66022c4c656b7317b130bf7a41ff0695b50b2ea614f7d8573baec62a0908f0d0",
+  "seed": 42,
+  "requested_seconds": 1.0,
+  "instrumented_solver_seconds": 1.3582338000001073,
+  "note": "cProfile overhead changes iteration count; costs excluded from benchmark",
+  "functions": [
+    {
+      "file": "src/gmrp_alns/search/alns.py",
+      "line": 128,
+      "function": "adaptive_alns",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0097484,
+      "cumulative_seconds": 1.5213253
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/state.py",
+      "line": 102,
+      "function": "__init__",
+      "primitive_calls": 4,
+      "calls": 4,
+      "self_seconds": 0.1682448,
+      "cumulative_seconds": 0.8278770000000001
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/validator.py",
+      "line": 46,
+      "function": "validate",
+      "primitive_calls": 7,
+      "calls": 7,
+      "self_seconds": 0.4619416,
+      "cumulative_seconds": 0.7985525
+    },
+    {
+      "file": "src/gmrp_alns/search/local_search.py",
+      "line": 277,
+      "function": "relocate_search",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0118825,
+      "cumulative_seconds": 0.43253230000000004
+    },
+    {
+      "file": "src/gmrp_alns/search/local_search.py",
+      "line": 162,
+      "function": "_run_search",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 4.8700000000000005e-05,
+      "cumulative_seconds": 0.4206498
+    },
+    {
+      "file": "src/gmrp_alns/search/common.py",
+      "line": 14,
+      "function": "build_result",
+      "primitive_calls": 2,
+      "calls": 2,
+      "self_seconds": 0.0118954,
+      "cumulative_seconds": 0.3390286
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 203,
+      "function": "repair_removed",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 4.6700000000000003e-05,
+      "cumulative_seconds": 0.252131
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/objective.py",
+      "line": 31,
+      "function": "evaluate_objective",
+      "primitive_calls": 9,
+      "calls": 9,
+      "self_seconds": 0.0183787,
+      "cumulative_seconds": 0.23834010000000003
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/calculations.py",
+      "line": 8,
+      "function": "compute_usage",
+      "primitive_calls": 20,
+      "calls": 20,
+      "self_seconds": 0.21997560000000002,
+      "cumulative_seconds": 0.2204131
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/calculations.py",
+      "line": 37,
+      "function": "ensure_assignment_shape",
+      "primitive_calls": 32,
+      "calls": 32,
+      "self_seconds": 0.0816284,
+      "cumulative_seconds": 0.2042113
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 239,
+      "function": "search",
+      "primitive_calls": 1,
+      "calls": 11,
+      "self_seconds": 0.006266900000000001,
+      "cumulative_seconds": 0.1979046
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/model.py",
+      "line": 62,
+      "function": "machine_count",
+      "primitive_calls": 640142,
+      "calls": 640142,
+      "self_seconds": 0.0812457,
+      "cumulative_seconds": 0.12262260000000001
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/state.py",
+      "line": 159,
+      "function": "_increment_sparse",
+      "primitive_calls": 240000,
+      "calls": 240000,
+      "self_seconds": 0.057009000000000004,
+      "cumulative_seconds": 0.0795975
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/calculations.py",
+      "line": 17,
+      "function": "compute_transient_usage",
+      "primitive_calls": 11,
+      "calls": 11,
+      "self_seconds": 0.0670324,
+      "cumulative_seconds": 0.0672648
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 45,
+      "function": "__init__",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0327072,
+      "cumulative_seconds": 0.0541729
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 98,
+      "function": "options",
+      "primitive_calls": 55,
+      "calls": 55,
+      "self_seconds": 0.008955000000000001,
+      "cumulative_seconds": 0.0378802
+    },
+    {
+      "file": "src/gmrp_alns/search/destroy.py",
+      "line": 66,
+      "function": "select_destroy",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0030947,
+      "cumulative_seconds": 0.027854900000000002
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 125,
+      "function": "insertion_delta",
+      "primitive_calls": 5442,
+      "calls": 5442,
+      "self_seconds": 0.0146516,
+      "cumulative_seconds": 0.0240624
+    },
+    {
+      "file": "src/gmrp_alns/search/destroy.py",
+      "line": 27,
+      "function": "_fill",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0011615,
+      "cumulative_seconds": 0.023634500000000003
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 34,
+      "function": "_increment",
+      "primitive_calls": 60000,
+      "calls": 60000,
+      "self_seconds": 0.015118500000000002,
+      "cumulative_seconds": 0.021336400000000002
+    },
+    {
+      "file": "src/gmrp_alns/search/common.py",
+      "line": 40,
+      "function": "<genexpr>",
+      "primitive_calls": 40002,
+      "calls": 40002,
+      "self_seconds": 0.0047799,
+      "cumulative_seconds": 0.0047799
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/objective.py",
+      "line": 39,
+      "function": "<genexpr>",
+      "primitive_calls": 63,
+      "calls": 63,
+      "self_seconds": 5.41e-05,
+      "cumulative_seconds": 0.002432
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/objective.py",
+      "line": 40,
+      "function": "<genexpr>",
+      "primitive_calls": 5454,
+      "calls": 5454,
+      "self_seconds": 0.0012284000000000002,
+      "cumulative_seconds": 0.0019109
+    },
+    {
+      "file": "src/gmrp_alns/search/destroy.py",
+      "line": 139,
+      "function": "<genexpr>",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.0010995,
+      "cumulative_seconds": 0.0010995
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/model.py",
+      "line": 58,
+      "function": "resource_count",
+      "primitive_calls": 3309,
+      "calls": 3309,
+      "self_seconds": 0.000471,
+      "cumulative_seconds": 0.0006987
+    },
+    {
+      "file": "src/gmrp_alns/search/lns.py",
+      "line": 122,
+      "function": "<lambda>",
+      "primitive_calls": 5442,
+      "calls": 5442,
+      "self_seconds": 0.00041210000000000004,
+      "cumulative_seconds": 0.00041210000000000004
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/state.py",
+      "line": 169,
+      "function": "assignment",
+      "primitive_calls": 5,
+      "calls": 5,
+      "self_seconds": 0.00020270000000000002,
+      "cumulative_seconds": 0.00020270000000000002
+    },
+    {
+      "file": "src/gmrp_alns/search/alns.py",
+      "line": 78,
+      "function": "_validate_parameters",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.00014130000000000002,
+      "cumulative_seconds": 0.00015120000000000002
+    },
+    {
+      "file": "src/gmrp_alns/search/alns.py",
+      "line": 33,
+      "function": "_objective_difference",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 1.9200000000000003e-05,
+      "cumulative_seconds": 0.0001128
+    },
+    {
+      "file": "src/gmrp_alns/gmrp/objective.py",
+      "line": 26,
+      "function": "as_dict",
+      "primitive_calls": 2,
+      "calls": 2,
+      "self_seconds": 2.4000000000000003e-06,
+      "cumulative_seconds": 9.010000000000001e-05
+    }
+  ]
+}

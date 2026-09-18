@@ -4,13 +4,15 @@ GMRP-ALNS is a reproducible research implementation for the
 [ROADEF/EURO Challenge 2012 Machine Reassignment Problem](https://roadef.org/challenge/2012/en/).
 It combines an independently implemented validator and objective evaluator with an incremental
 move engine, local search, adaptive large-neighborhood search, and bounded Restricted CP-SAT
-Repair. The preregistered benchmark and technical report are the next stage.
+Repair. A preregistered, fully traceable A/B short-budget study records both positive and negative
+findings; it does not claim competition-level performance.
 A classic Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
 
-> **Status:** pre-alpha, M0–M6 complete. The GMRP parser, full validator/objective,
+> **Status:** pre-alpha, M0–M7 complete. The GMRP parser, full validator/objective,
 > incremental relocate/swap state, first/best local search, VND, random-removal LNS, Adaptive
 > ALNS, periodic Restricted CP-SAT Repair, and the classic GAP exact/heuristic track are present.
-> M7's frozen multi-seed A/B benchmark remains TBD.
+> M7's frozen 660-observation study, raw archive, figures and technical verification are complete;
+> M8 release packaging remains.
 
 ## Scope
 
@@ -61,7 +63,8 @@ solution and `1` for an infeasible solution; malformed input returns `2`.
 External benchmark files are not committed. See [data/README.md](data/README.md) for official
 sources and expected placement. `data/raw/` and generated run outputs are ignored by Git.
 Every published result must retain its configuration, seed, time limit, environment, and raw
-output. No result numbers will be added here before they are reproducible.
+output. M7's committed archive is under [results/m7](results/m7), and every result number below is
+traceable to its JSONL/CSV/JSON files and checksums.
 
 ## Project documents
 
@@ -76,6 +79,9 @@ output. No result numbers will be added here before they are reproducible.
 - [M4 verification record](docs/m4_verification.md)
 - [M5 verification record](docs/m5_verification.md)
 - [M6 verification record](docs/m6_verification.md)
+- [M7 preregistration](docs/m7_protocol.md)
+- [M7 verification and interpretation](docs/m7_verification.md)
+- [M7 generated report](results/m7/report.md)
 - [Roadmap](ROADMAP.md)
 - [Third-party sources](THIRD_PARTY.md)
 
@@ -175,3 +181,24 @@ summed objective. All 135 exact calls respected the configured limits, 83 yielde
 current-solution improvement, and all 18 final assignments matched the unmodified official
 checker. These machine-dependent development results are not the M7 benchmark; see the M6
 verification record for the full table and limitations.
+
+## M7 preregistered short-budget study
+
+The frozen M7 matrix contains 20 A/B instances, five seeds, six main methods and three fixed
+ablations on four instances: 660 isolated, serial observations with a requested one-second search
+budget. All 660 returned assignments passed both full project validation and the unmodified
+official checker, with no failed or missing records.
+
+Relocate and VND produced the strongest mean relative improvement over the initial assignment
+(12.032% and 12.008%); Adaptive ALNS reached 9.126%, and Restricted Repair reached 8.994%. In
+paired comparison, Relocate and VND beat/tied/lost against ALNS in 72/10/18 and 74/8/18 cases.
+Restricted Repair was nearly neutral at 32/35/33 with a -0.131 percentage-point mean gain. These
+are negative findings for added complexity at this budget, not a longer-budget conclusion.
+
+The requested budget was not a strict deadline: 208/660 complete solver calls exceeded the
+preregistered 1.1-second tolerance. In particular, none of the 40 held-out B3–B10 ALNS/Restricted
+pairs had both observations within tolerance. The archive therefore retains actual solver and
+process times, failure denominators, memory, checker output and sensitivity counts instead of
+describing every returned result as a strict one-second result. Full tables, ablation caveats,
+profiling, environment and reproduction commands are in the
+[M7 verification record](docs/m7_verification.md).

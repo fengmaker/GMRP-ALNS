@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.bat text eol=crlf
 
+# Preserve the audited M7 archive byte-for-byte so its internal SHA-256 map survives checkout.
+results/m7/** -text whitespace=cr-at-eol

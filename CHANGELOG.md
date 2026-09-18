@@ -40,3 +40,9 @@ the public API stabilizes.
   hints, full-oracle write-back, and failure-safe fallback.
 - Periodic Restricted Repair integration for Adaptive ALNS, CLI controls, per-call solver telemetry,
   exhaustive toy-neighborhood tests, and a frozen enable/disable M6 development ablation.
+- Preregistered M7 experiment framework with immutable manifests, input/source/environment hashes,
+  deterministic shuffled matrices, isolated serial workers, watchdogs, resumable record hashes,
+  official-checker validation, worker high-water memory measurement, and tamper tests.
+- Complete 660-observation A/B short-budget archive with raw JSONL, aggregate CSV/JSON, operator
+  telemetry, paired held-out/ablation analysis, generated PNG figures, SHA-256 checksums, a separate
+  cProfile record, and a technical verification report that retains overruns and negative results.

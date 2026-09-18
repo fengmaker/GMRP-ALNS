@@ -73,7 +73,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0～M6 已完成；
+- M0～M7 已完成；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
 - M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
 - M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
@@ -84,7 +84,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 - M6 已实现固定邻域外进程的 Restricted CP-SAT Repair，完整建模五类硬约束和五类目标，
   限制候选机器、assignment 变量数、单次局部时限及单线程，并仅回写经全量 oracle 复核的
   严格改善解；ALNS 支持周期调用和逐次求解遥测；
-- 55/55 测试通过，覆盖率 88%，Ruff 与严格 mypy 通过；
+- 60/60 测试通过，覆盖率 82%，Ruff 与严格 mypy（34 个源文件）通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
 - 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
@@ -102,10 +102,14 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
   汇总目标低 22,192,222；135 次局部求解全部满足 100 个 assignment 变量和 0.05 秒 solver
   上限，83 次改善当前解，18 个输出均通过官方 checker；该结果不是 M7 benchmark；
 - B1 一秒安全烟测完成 11 次有界精确修复，最终成本 6,935,472,463 与官方 checker 一致；
-- 下一里程碑：M7 预注册完整 A/B 多 seed benchmark、聚合、绘图与技术报告。
-- M7 已开始：新增隔离实验运行器、冻结 manifest、哈希校验续跑、聚合和 Matplotlib 图表；
-  `docs/m7_protocol.md` 预注册 20 个 A/B 实例 × 5 seed × 6 方法及固定子集四项消融，
-  共 660 次一秒档观测。执行前 60 项测试、Ruff、mypy 通过；正式结果待运行。
+- M7 冻结矩阵已完成：20 个 A/B 实例 × 5 seed × 6 主方法，加四个实例上的三项额外消融，
+  共 660 次一秒请求预算观测；660 个最终解全部通过全量 Validator 和官方 checker，无失败
+  或缺失，原始 JSONL、汇总 CSV/JSON、图表、profile 与校验和归档于 `results/m7/`；
+- M7 的主要负面结论是：Relocate/VND 平均改善 12.032%/12.008%，高于 ALNS 的 9.126%；
+  Restricted 为 8.994%，对 ALNS 配对为 32 胜 35 平 33 负。208/660 次完整 solver 调用超过
+  1.1 秒容差，held-out B3～B10 的 ALNS/Restricted 没有双方都在容差内的配对，因此不能
+  表述为严格一秒性能结论；完整限制见 `docs/m7_verification.md`；
+- 下一里程碑：M8 中英文发布摘要、架构/流程图、演示材料、发布检查与证据化项目表述。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
@@ -360,3 +364,31 @@ seed、时间档、硬件/依赖/commit 和统计方案，再运行完整 A/B �
 **测量修正：** 首轮完成 45 次后发现父进程内存监测只记录 Windows venv 启动器；保留 v1
 记录，补充 Python 子进程跟踪和 worker 自报 peak working set。算法、参数和矩阵保持不变，
 在新提交与 v2 manifest 下重跑完整实验。此前观测不混入最终结果。
+
+## QA-021｜完成 M7 冻结实验与技术报告
+
+**日期：** 2026-09-18
+
+**用户请求：** “继续”，即延续 M7 正式矩阵、聚合、技术报告与里程碑收尾。
+
+**执行结果：**
+
+- 从冻结提交 `ee29875` 的 `m7-v2` manifest 安全续跑，最终 660/660 条记录状态均为 `ok`；
+  全部 assignment 通过自研全量 Validator 和未修改官方 checker，无失败、缺失或结果替换；
+- 单独完成 B3/seed 42 的 cProfile，再生成 `results/m7/`：660 行 `records.jsonl`、132 行
+  instance/method 汇总、配对分析、算子 CSV、三张 PNG、manifest、profile 和覆盖其余 11 个
+  文件的 SHA-256 清单；校验和复算全部一致；
+- 主矩阵平均相对初始解改善为 Relocate 12.032%、VND 12.008%、Random LNS 5.584%、ALNS
+  9.126%、Restricted 8.994%。Relocate/VND 对 ALNS 分别为 72/10/18、74/8/18；Restricted
+  为 32/35/33，平均低 0.131 percentage point；如实记录复杂方法在一秒档未胜出的负结果；
+- 660 条中 208 条完整 solver 调用超过预注册 1.1 秒容差；B3～B10 held-out 的 40 组
+  ALNS/Restricted 配对没有任何一组双方同时在容差内，因此只报告 returned-result 行为，
+  不声称严格一秒泛化；no-restart 的 20 条观察均未达到 200 轮触发点，该消融判为无结论；
+- 新增 `docs/m7_verification.md`，并同步 README、快速上手、实验协议、复现说明、结果说明、
+  配置说明、ROADMAP、CHANGELOG 与本文件；数学模型和算法细节已在 M7 前置提交中补全；
+- 最终质量门：60/60 tests，82% coverage，Ruff 全部通过，严格 mypy 对 34 个源文件通过，
+  `git diff --check` 通过；归档未发现绝对本机路径。
+
+**限制与下一步：** M7 仅覆盖单机、一秒请求预算，无 BKS gap、竞赛程序对比、显著性检验或
+10/60/300 秒档；208 个超容差结果持续保留。下一里程碑为 M8 发布整理；按既定分工由助手
+本地 commit，用户自行 push。

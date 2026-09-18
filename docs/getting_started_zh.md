@@ -8,11 +8,11 @@
 4. 如何在几分钟内把项目运行起来？
 5. 应该按什么顺序阅读代码，哪些代码最核心？
 
-当前仓库已完成 M0～M6：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
+当前仓库已完成 M0～M7：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
 `relocate`/`swap` 状态，现在还提供 First/Best Improvement、Relocate + Swap VND、Random
 LNS，以及包含五种 destroy、三种 repair、模拟退火、自适应权重和 restart 的 Adaptive
-ALNS；Restricted CP-SAT Repair 可在有界局部邻域内周期性精确优化。下一阶段是 M7 冻结
-实验与技术报告。
+ALNS；Restricted CP-SAT Repair 可在有界局部邻域内周期性精确优化。M7 已完成冻结的
+660 次 A/B 短预算实验、原始记录、聚合图表和技术报告；下一阶段是 M8 发布整理。
 
 ---
 
@@ -301,12 +301,14 @@ JSON 包含算法、seed、time limit、迭代次数、候选评估次数、time
 算子统计、权重历史、收敛轨迹、目标分量变化和最终 assignment。M4 的局部搜索与 Random
 LNS 只接受改善；Adaptive ALNS 可以按模拟退火接受较差的当前解，但始终保存历史最佳可行
 解，并且返回前调用完整 validator 和 objective 复核。生成的批量运行记录应放在
-`results/runs/`，聚合报告放在 `results/report/`；两者默认不提交，冻结实验结果后再按实验
-协议处理。
+`results/runs/`，临时聚合报告放在 `results/report/`；两者默认不提交。完成审计的 M7 冻结
+归档位于 `results/m7/`，包含 manifest、660 行 JSONL、CSV/JSON 汇总、图表与校验和。
 
 M4 的一秒 A 组记录是工程验收，不是完整的 GMRP 解质量 benchmark；详见
 `docs/m4_verification.md`。M5 的配对开发门和 A/B 可行性门见 `docs/m5_verification.md`，
 M6 的启用/关闭消融见 `docs/m6_verification.md`；它们都不能替代 M7 的冻结 benchmark。
+M7 的预注册、完整结果和限制分别见 `docs/m7_protocol.md`、`results/m7/` 与
+`docs/m7_verification.md`。
 
 ---
 
@@ -366,6 +368,8 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
+如需生成 M7 图表并测量 worker 内存，改为安装 `.[dev,experiments]`。
+
 ### 6.2 运行质量检查
 
 ```powershell
@@ -374,7 +378,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m mypy
 ```
 
-当前 M6 基线是 55 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
+当前 M7 基线是 60 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
 把固定数量写进自动化判断。
 
 ### 6.3 跑通 GMRP toy
@@ -739,6 +743,7 @@ M6 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta
 src/gmrp_alns/gmrp/   GMRP 领域模型、解析、验证、目标和增量状态
 src/gmrp_alns/search/ GMRP 局部搜索、基础 LNS、统一结果与最终复核
 src/gmrp_alns/exact/  Restricted CP-SAT Repair
+src/gmrp_alns/experiments/ 冻结协议、隔离 runner、worker 与报告聚合
 src/gmrp_alns/gap/    经典 GAP 解析、精确模型和启发式基线
 tests/                 单元测试、性质测试和 CLI 集成测试
 data/toy/              可提交、离线可运行的小实例
@@ -749,6 +754,7 @@ docs/                  数学模型、计划、协议、验证记录和本指南
 configs/               后续实验配置
 results/runs/          后续原始运行记录，Git 忽略
 results/report/        后续聚合报告，Git 忽略
+results/m7/            已审计并提交的 M7 原始投影、汇总、图表与校验和
 ```
 
 `.venv/` 是本机 Python 环境，不是项目源码；删除后可以重新安装，不应提交。
@@ -798,7 +804,7 @@ results/report/        后续聚合报告，Git 忽略
 
 ## 14. 继续开发时应守住的边界
 
-实现 M7 及之后功能时，继续保持以下依赖方向：
+实现 M8 及之后功能时，继续保持以下依赖方向：
 
 ```text
 CLI / experiment scripts

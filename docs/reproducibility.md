@@ -2,7 +2,8 @@
 
 The committed GMRP and GAP toy instances permit offline validation, scoring, exact solving, and
 incremental-state checks. A clean Python 3.11+ environment can install the package with
-`pip install -e ".[dev]"`, then run `pytest`, `ruff check .`, and `mypy`.
+`pip install -e ".[dev]"`, then run `pytest`, `ruff check .`, and `mypy`. M7 report generation and
+worker-memory measurement additionally require `pip install -e ".[dev,experiments]"`.
 
 Official-data cross-validation is intentionally separate because benchmark files and the checker
 are external artifacts. Record their exact source URL, retrieval timestamp, SHA-256 digest, and
@@ -35,3 +36,34 @@ assignment with the unmodified official checker, and fails if any exact call exc
 assignment-variable, solver-time, or bounded call-overhead limits. The exhaustive toy-neighborhood
 oracle comparison and recorded A-set ablation are documented in `docs/m6_verification.md`. As with
 earlier gates, these one-second development observations are excluded from M7 evidence.
+
+M7 uses a frozen manifest and resumable, isolated, serial worker processes. With all externally
+downloaded A/B files and the compiled checker in their documented `data/raw/roadef/` locations,
+the following freezes a new run, executes just one reproducible subset, resumes the complete
+matrix, and builds the standalone archive:
+
+```powershell
+.\.venv\Scripts\python.exe -m gmrp_alns.experiments freeze `
+  configs/m7_benchmark.json results/runs/m7-local `
+  --checker data/raw/roadef/checker/solution_checker.exe
+.\.venv\Scripts\python.exe -m gmrp_alns.experiments run `
+  results/runs/m7-local --instances a1_1
+.\.venv\Scripts\python.exe -m gmrp_alns.experiments run results/runs/m7-local
+.\.venv\Scripts\python.exe -m gmrp_alns.experiments report `
+  results/runs/m7-local results/report/m7-local
+```
+
+The second command is the one-command experiment-subset reproduction after freezing. Resume first
+verifies the source, environment, input, checker, manifest, and completed-record hashes. Profiling
+is deliberately separate so instrumentation cannot alter benchmark observations:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/profile_m7.py `
+  data/raw/roadef/b/model_b_3.txt `
+  data/raw/roadef/b/assignment_b_3.txt `
+  results/report/profile_b3.json --time-limit 1
+```
+
+The checked-in M7 archive and interpretation are linked from `results/README.md` and
+`docs/m7_verification.md`. The archive's `manifest.json`, `records.jsonl`, summaries, figures and
+checksums are sufficient to regenerate and audit the report without external benchmark files.

@@ -1,0 +1,93 @@
+{
+  "ablations": [
+    {
+      "baseline": "alns",
+      "variant": "restricted",
+      "instances": [
+        "a1_2",
+        "a2_3",
+        "b_3",
+        "b_7"
+      ],
+      "wins": 7,
+      "ties": 5,
+      "losses": 8,
+      "unavailable_pairs": 0,
+      "paired_mean_gain_percentage_points": -0.3457996218018245,
+      "both_within_budget_pairs": 10,
+      "timely_mean_gain_percentage_points": 0.2378585623855639
+    },
+    {
+      "baseline": "alns",
+      "variant": "random-only",
+      "instances": [
+        "a1_2",
+        "a2_3",
+        "b_3",
+        "b_7"
+      ],
+      "wins": 6,
+      "ties": 6,
+      "losses": 8,
+      "unavailable_pairs": 0,
+      "paired_mean_gain_percentage_points": -0.6670627380292246,
+      "both_within_budget_pairs": 10,
+      "timely_mean_gain_percentage_points": -0.44818427651324905
+    },
+    {
+      "baseline": "alns",
+      "variant": "no-restart",
+      "instances": [
+        "a1_2",
+        "a2_3",
+        "b_3",
+        "b_7"
+      ],
+      "wins": 11,
+      "ties": 7,
+      "losses": 2,
+      "unavailable_pairs": 0,
+      "paired_mean_gain_percentage_points": 0.3860362033051172,
+      "both_within_budget_pairs": 10,
+      "timely_mean_gain_percentage_points": 0.6725369991328362
+    },
+    {
+      "baseline": "alns",
+      "variant": "greedy-only",
+      "instances": [
+        "a1_2",
+        "a2_3",
+        "b_3",
+        "b_7"
+      ],
+      "wins": 12,
+      "ties": 6,
+      "losses": 2,
+      "unavailable_pairs": 0,
+      "paired_mean_gain_percentage_points": 0.38713011563793676,
+      "both_within_budget_pairs": 10,
+      "timely_mean_gain_percentage_points": 0.7086044421756416
+    }
+  ],
+  "heldout": {
+    "baseline": "alns",
+    "variant": "restricted",
+    "instances": [
+      "b_3",
+      "b_4",
+      "b_5",
+      "b_6",
+      "b_7",
+      "b_8",
+      "b_9",
+      "b_10"
+    ],
+    "wins": 10,
+    "ties": 22,
+    "losses": 8,
+    "unavailable_pairs": 0,
+    "paired_mean_gain_percentage_points": -0.22245500201866206,
+    "both_within_budget_pairs": 0,
+    "timely_mean_gain_percentage_points": null
+  }
+}
