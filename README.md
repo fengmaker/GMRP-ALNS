@@ -3,13 +3,14 @@
 GMRP-ALNS is a reproducible research implementation for the
 [ROADEF/EURO Challenge 2012 Machine Reassignment Problem](https://roadef.org/challenge/2012/en/).
 It combines an independently implemented validator and objective evaluator with an incremental
-move engine, local search, basic LNS, and adaptive large-neighborhood search. Restricted exact
-repair is the next stage.
+move engine, local search, adaptive large-neighborhood search, and bounded Restricted CP-SAT
+Repair. The preregistered benchmark and technical report are the next stage.
 A classic Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
 
-> **Status:** pre-alpha, M0–M5 complete. The GMRP parser, full validator/objective,
+> **Status:** pre-alpha, M0–M6 complete. The GMRP parser, full validator/objective,
 > incremental relocate/swap state, first/best local search, VND, random-removal LNS, Adaptive
-> ALNS, and the classic GAP exact/heuristic track are present. Restricted exact repair remains TBD.
+> ALNS, periodic Restricted CP-SAT Repair, and the classic GAP exact/heuristic track are present.
+> M7's frozen multi-seed A/B benchmark remains TBD.
 
 ## Scope
 
@@ -19,7 +20,10 @@ all official objective components. Cached GMRP state supports feasibility checks
 deltas, apply/undo, and Top-K relocate candidates. Search supports strict-feasible first/best
 relocate improvement, relocate/swap VND, random removal, and Adaptive ALNS with five destroy and
 three repair operators, simulated annealing, adaptive weights, and restart under a shared seed and
-time-limit protocol. The GAP track supports the OR-Library format, CP-SAT,
+time-limit protocol. An optional periodic exact repair fixes the complement of a destroyed
+neighborhood, caps candidate assignment variables and local solver time, models every official
+constraint and objective component, and writes back only a full-oracle-verified improvement. The
+GAP track supports the OR-Library format, CP-SAT,
 cost/regret construction, repair, relocate, and swap. It deliberately does not copy a competition
 entry or claim unmeasured performance.
 
@@ -42,6 +46,8 @@ gmrp-alns validate data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/s
 gmrp-alns score data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
 gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
   --algorithm adaptive-alns --time-limit 2 --seed 42 --output candidate.sol
+gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
+  --algorithm adaptive-alns-restricted --time-limit 2 --seed 42 --output candidate-m6.sol
 gmrp-alns gap parse data/toy/gap_toy.txt --sense minimize
 gmrp-alns gap solve data/toy/gap_toy.txt --sense minimize --algorithm exact --reference-value 8
 ```
@@ -69,6 +75,7 @@ output. No result numbers will be added here before they are reproducible.
 - [M2–M3 verification record](docs/m2_m3_verification.md)
 - [M4 verification record](docs/m4_verification.md)
 - [M5 verification record](docs/m5_verification.md)
+- [M6 verification record](docs/m6_verification.md)
 - [Roadmap](ROADMAP.md)
 - [Third-party sources](THIRD_PARTY.md)
 
@@ -149,3 +156,22 @@ python scripts/verify_m5_feasibility.py \
 
 These are machine-dependent M5 engineering gates, not the preregistered M7 benchmark. See the M5
 verification record for the frozen criteria, configuration revision, results, and limitations.
+
+## M6 verification
+
+The M6 ablation compares Adaptive ALNS with exact repair disabled and enabled under equal
+one-second budgets on the same three A instances and three seeds. Restricted calls begin at the
+first ALNS iteration and then occur every ten iterations; each call uses one CP-SAT worker, at most
+100 assignment variables, at most ten candidate machines per removed process, and a 0.05-second
+local budget:
+
+```bash
+python scripts/verify_m6_development.py configs/m6_development.json \
+  data/raw/roadef/checker/solution_checker.exe data/raw/roadef
+```
+
+The recorded run produced five hybrid wins, three ties, and one loss, with a 22,192,222 lower
+summed objective. All 135 exact calls respected the configured limits, 83 yielded a verified
+current-solution improvement, and all 18 final assignments matched the unmodified official
+checker. These machine-dependent development results are not the M7 benchmark; see the M6
+verification record for the full table and limitations.

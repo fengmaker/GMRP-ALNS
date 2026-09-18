@@ -28,3 +28,10 @@ ALNS outputs with the unmodified official checker over declared A/B instances. E
 results, the failed first configuration revision, and the in-budget warm-start revision are in
 `docs/m5_verification.md`. These development-set observations are explicitly excluded from M7's
 future reportable benchmark evidence.
+
+M6 adds `scripts/verify_m6_development.py` and `configs/m6_development.json`. The script runs the
+same Adaptive ALNS settings with Restricted CP-SAT Repair disabled and enabled, checks every final
+assignment with the unmodified official checker, and fails if any exact call exceeds the declared
+assignment-variable, solver-time, or bounded call-overhead limits. The exhaustive toy-neighborhood
+oracle comparison and recorded A-set ablation are documented in `docs/m6_verification.md`. As with
+earlier gates, these one-second development observations are excluded from M7 evidence.

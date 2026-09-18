@@ -19,6 +19,8 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
 - [x] **M5 — adaptive ALNS:** five destroy and three strict-feasible repair operators,
   simulated annealing, segmented adaptive weights, best-solution restart/protection, telemetry,
   paired development comparison, and A/B official-checker validation.
-- [ ] **M6 — restricted exact repair.**
+- [x] **M6 — restricted exact repair:** fixed-complement CP-SAT neighborhoods, exact hard
+  constraints and objective, strict local time/assignment-variable limits, verified safe fallback,
+  telemetry, official-checker cross-checks, and an enable/disable development ablation.
 - [ ] **M7 — preregistered benchmark and technical report.**
 - [ ] **M8 — public release and evidence-backed project summary.**

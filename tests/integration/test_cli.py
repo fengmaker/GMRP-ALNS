@@ -145,3 +145,48 @@ def test_adaptive_alns_cli_exposes_weights_and_components(
         if name.startswith(("destroy:", "repair:"))
     )
     assert output.read_text(encoding="utf-8").strip() == "0 2 1"
+
+
+def test_restricted_alns_cli_exposes_exact_repair_telemetry(
+    toy_dir: Path, tmp_path: Path, capsys: object
+) -> None:
+    output = tmp_path / "m6.sol"
+    exit_code = main(
+        [
+            "solve",
+            str(toy_dir / "model_toy.txt"),
+            str(toy_dir / "assignment_toy.txt"),
+            "--algorithm",
+            "adaptive-alns-restricted",
+            "--time-limit",
+            "2",
+            "--seed",
+            "42",
+            "--max-iterations",
+            "1",
+            "--destroy-size",
+            "3",
+            "--warm-start-fraction",
+            "0",
+            "--restricted-repair-interval",
+            "1",
+            "--restricted-repair-time-limit",
+            "1",
+            "--restricted-repair-candidate-machines",
+            "4",
+            "--restricted-repair-variable-limit",
+            "20",
+            "--output",
+            str(output),
+        ]
+    )
+    assert exit_code == 0
+    result = json.loads(capsys.readouterr().out)  # type: ignore[attr-defined]
+    assert result["algorithm"] == "adaptive-alns-restricted"
+    assert result["best_cost"] == 2411
+    assert result["config"]["restricted_repair"]["enabled"]
+    calls = result["config"]["restricted_repair"]["calls"]
+    assert len(calls) == 1
+    assert calls[0]["assignment_variables"] <= 20
+    assert result["operator_stats"]["repair:restricted-cpsat"]["calls"] == 1
+    assert output.read_text(encoding="utf-8").strip() == "0 2 1"

@@ -5,3 +5,4 @@ operator limits, and acceptance criteria. Development configurations are enginee
 than preregistered M7 benchmark protocols; do not silently change one after reporting its results.
 
 - `m5_development.json`: frozen paired Random LNS versus Adaptive ALNS development comparison.
+- `m6_development.json`: frozen Adaptive ALNS exact-repair enable/disable engineering ablation.

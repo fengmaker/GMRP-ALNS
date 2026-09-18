@@ -8,10 +8,11 @@
 4. 如何在几分钟内把项目运行起来？
 5. 应该按什么顺序阅读代码，哪些代码最核心？
 
-当前仓库已完成 M0～M5：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
+当前仓库已完成 M0～M6：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
 `relocate`/`swap` 状态，现在还提供 First/Best Improvement、Relocate + Swap VND、Random
 LNS，以及包含五种 destroy、三种 repair、模拟退火、自适应权重和 restart 的 Adaptive
-ALNS。M6 的 Restricted Exact Repair 尚未实现。
+ALNS；Restricted CP-SAT Repair 可在有界局部邻域内周期性精确优化。下一阶段是 M7 冻结
+实验与技术报告。
 
 ---
 
@@ -293,6 +294,8 @@ assignment，同时标准输出给出 JSON。可选算法如下：
 - `random-lns-greedy`、`random-lns-regret`：随机移除进程，再以对应策略有界修复。
 - `adaptive-alns`：自适应选择五种 destroy 和三种 repair，使用模拟退火接受与历史最佳
   restart；默认把总时限的 20% 用于 relocate warm start。
+- `adaptive-alns-restricted`：在相同总时限内周期性调用 Restricted CP-SAT Repair；固定邻域
+  外进程，并限制候选机器数、assignment 变量数和单次局部求解时间。
 
 JSON 包含算法、seed、time limit、迭代次数、候选评估次数、time to best、目标分量、
 算子统计、权重历史、收敛轨迹、目标分量变化和最终 assignment。M4 的局部搜索与 Random
@@ -303,7 +306,7 @@ LNS 只接受改善；Adaptive ALNS 可以按模拟退火接受较差的当前�
 
 M4 的一秒 A 组记录是工程验收，不是完整的 GMRP 解质量 benchmark；详见
 `docs/m4_verification.md`。M5 的配对开发门和 A/B 可行性门见 `docs/m5_verification.md`，
-同样不能替代 M7 的冻结 benchmark。
+M6 的启用/关闭消融见 `docs/m6_verification.md`；它们都不能替代 M7 的冻结 benchmark。
 
 ---
 
@@ -371,7 +374,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m mypy
 ```
 
-当前 M5 基线是 49 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
+当前 M6 基线是 55 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
 把固定数量写进自动化判断。
 
 ### 6.3 跑通 GMRP toy
@@ -550,6 +553,14 @@ assert_consistent
 22. `src/gmrp_alns/search/model.py`
 23. `tests/unit/test_search.py` 与 `tests/unit/test_alns.py`
 
+Restricted Repair 再阅读：
+
+24. `src/gmrp_alns/exact/restricted_repair.py`
+25. `tests/unit/test_restricted_repair.py`
+
+这里要重点理解“固定邻域外进程”“候选域必须保留 incumbent”“变量与局部时限上限”，以及
+CP-SAT 输出为什么还必须经过全量 Validator 和 Objective 才能回写。
+
 `local_search.py` 负责 First/Best Improvement 和 VND；`lns.py` 负责随机移除及
 greedy/regret/randomized 修复；`destroy.py` 定义五种进程选择逻辑；`acceptance.py` 和
 `operator_selection.py` 分别隔离模拟退火与分段权重公式；`alns.py` 只负责编排主循环、
@@ -557,21 +568,21 @@ restart 和历史最佳保护；`common.py` 是最终全量复核关口。
 
 ### 第六层：理解外部接口
 
-24. `src/gmrp_alns/cli.py`
-25. `tests/integration/test_cli.py`
-26. `src/gmrp_alns/gmrp/checker.py`
+26. `src/gmrp_alns/cli.py`
+27. `tests/integration/test_cli.py`
+28. `src/gmrp_alns/gmrp/checker.py`
 
 CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 checker adapter 只把外部
 可执行程序作为独立进程调用，不把第三方 checker 逻辑混入自研实现。
 
 ### 第七层：阅读经典 GAP 轨道
 
-27. `src/gmrp_alns/gap/model.py`
-28. `src/gmrp_alns/gap/parser.py`
-29. `src/gmrp_alns/gap/checker.py`
-30. `src/gmrp_alns/gap/exact.py`
-31. `src/gmrp_alns/gap/heuristics.py`
-32. `tests/unit/test_gap.py`
+29. `src/gmrp_alns/gap/model.py`
+30. `src/gmrp_alns/gap/parser.py`
+31. `src/gmrp_alns/gap/checker.py`
+32. `src/gmrp_alns/gap/exact.py`
+33. `src/gmrp_alns/gap/heuristics.py`
+34. `tests/unit/test_gap.py`
 
 先看 `exact.py` 理解标准 0-1 指派模型，再看 `heuristics.py` 中如何构造、repair、relocate
 和 swap，有助于对照理解 GMRP 搜索中多出的服务约束和迁移成本。
@@ -601,6 +612,7 @@ CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 check
 | `search/alns.py` | Adaptive ALNS 编排 | M5 接受、权重、restart 与最佳解保护 |
 | `search/acceptance.py` | 模拟退火 | 接受概率和温度更新的单一实现 |
 | `search/operator_selection.py` | 自适应轮盘赌 | 分段评分及反应权重公式 |
+| `exact/restricted_repair.py` | 有界 CP-SAT 局部精确修复 | M6 Matheuristic 与安全回退 |
 | `search/common.py` | 最终全量复核 | 防止增量错误或修复错误流出求解器 |
 | `tests/unit/test_state.py` | 增量与全量 oracle 对拍 | 防止“跑得快但算错” |
 | `tests/unit/test_search.py` | 搜索可行性、改进性与复现性 | 固化 M4 行为边界 |
@@ -621,7 +633,7 @@ CLI 只负责编排 parser、validator、objective 或 GAP solver；官方 check
 
 ## 10. 用 Python 直接运行搜索或操作增量状态
 
-应用代码通常直接调用 M5 搜索函数：
+应用代码通常直接调用 M6 搜索函数；`restricted_repair_interval=0` 表示关闭精确修复：
 
 ```python
 from pathlib import Path
@@ -640,6 +652,10 @@ result = adaptive_alns(
     time_limit_seconds=2,
     seed=42,
     max_iterations=100,
+    restricted_repair_interval=10,
+    restricted_repair_time_limit_seconds=0.05,
+    restricted_repair_candidate_machines=10,
+    restricted_repair_variable_limit=100,
 )
 assert result.objective.total_cost == 2411
 write_assignment("candidate.sol", result.assignment)
@@ -684,7 +700,7 @@ state.undo_move(move)
 state.assert_consistent()
 ```
 
-M5 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta、接受或拒绝移动，并
+M6 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta、接受或拒绝移动，并
 始终保留历史最佳可行解。这个循环属于 `search/`，不应塞进 parser、validator 或 objective。
 
 ---
@@ -699,6 +715,7 @@ M5 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta
 | Relocate/Swap 缓存 | `test_state.py` 的 full-vs-incremental 与 undo |
 | First/Best、VND、LNS 或 repair | `test_search.py`，并以完整 oracle 复核 |
 | Destroy、SA、权重或 Adaptive ALNS | `test_alns.py`，并检查相同 seed 的轨迹 |
+| Restricted CP-SAT 模型或回写 | `test_restricted_repair.py`，并与穷举/全量 oracle 对拍 |
 | GAP 模型或算法 | `test_gap.py` |
 | CLI 参数或 JSON | `test_cli.py` |
 
@@ -712,7 +729,7 @@ M5 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta
 
 性能微基准和外部 checker 不放进普通 CI，因为它们依赖外部数据、编译器或特定硬件。对应
 命令与边界见 `docs/m1_verification.md`、`docs/m2_m3_verification.md` 和
-`docs/m4_verification.md` 和 `docs/m5_verification.md`。
+`docs/m4_verification.md`、`docs/m5_verification.md` 和 `docs/m6_verification.md`。
 
 ---
 
@@ -721,12 +738,13 @@ M5 搜索在 time limit 或 iteration limit 内反复生成候选、比较 delta
 ```text
 src/gmrp_alns/gmrp/   GMRP 领域模型、解析、验证、目标和增量状态
 src/gmrp_alns/search/ GMRP 局部搜索、基础 LNS、统一结果与最终复核
+src/gmrp_alns/exact/  Restricted CP-SAT Repair
 src/gmrp_alns/gap/    经典 GAP 解析、精确模型和启发式基线
 tests/                 单元测试、性质测试和 CLI 集成测试
 data/toy/              可提交、离线可运行的小实例
 data/raw/              下载的第三方数据，Git 忽略
 data/manifests/        外部数据的来源、时间、大小和 SHA-256
-scripts/               checker 交叉验证、参考值验证、M4 验收和微基准
+scripts/               checker 交叉验证、参考值验证、M4～M6 验收和微基准
 docs/                  数学模型、计划、协议、验证记录和本指南
 configs/               后续实验配置
 results/runs/          后续原始运行记录，Git 忽略
@@ -773,14 +791,14 @@ results/report/        后续聚合报告，Git 忽略
 ### “现在能直接跑 GMRP ALNS 吗？”
 
 可以。`--algorithm adaptive-alns` 已包含五种 destroy、三种严格可行 repair、模拟退火、
-算子评分与权重更新、restart 和历史最佳保护。它仍不包含 M6 的 Restricted CP-SAT Repair，
-也不应把 M5 开发集结果表述成最终 benchmark 结论。
+算子评分与权重更新、restart 和历史最佳保护；`--algorithm adaptive-alns-restricted` 还会
+启用 M6 的 Restricted CP-SAT Repair。M5/M6 开发集结果都不能表述成最终 benchmark 结论。
 
 ---
 
 ## 14. 继续开发时应守住的边界
 
-实现 M6 及之后功能时，继续保持以下依赖方向：
+实现 M7 及之后功能时，继续保持以下依赖方向：
 
 ```text
 CLI / experiment scripts

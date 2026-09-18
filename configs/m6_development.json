@@ -1,0 +1,28 @@
+{
+  "frozen_at": "2026-09-18",
+  "revision": 2,
+  "revision_note": "pre-freeze smoke called exact repair only on interval multiples and missed very slow A1_4 runs; revision 2 calls on iteration 1 and then every interval",
+  "purpose": "M6 engineering ablation; not the M7 benchmark",
+  "instances": ["a1_1", "a1_2", "a1_4"],
+  "seeds": [7, 42, 101],
+  "time_limit_seconds": 1.0,
+  "adaptive_alns": {
+    "destroy_size": 10,
+    "repair_top_k": 10,
+    "repair_node_limit": 10000,
+    "segment_length": 25,
+    "reaction_factor": 0.2,
+    "target_acceptance_probability": 0.5,
+    "initial_worsening_fraction": 0.01,
+    "cooling_rate": 0.995,
+    "restart_interval": 200,
+    "warm_start_fraction": 0.2
+  },
+  "restricted_repair": {
+    "interval": 10,
+    "time_limit_seconds": 0.05,
+    "candidate_machine_limit": 10,
+    "variable_limit": 100,
+    "allowed_call_overrun_seconds": 0.05
+  }
+}

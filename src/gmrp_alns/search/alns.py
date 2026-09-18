@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from time import perf_counter
 from typing import Any, cast
 
+from gmrp_alns.exact.restricted_repair import restricted_cpsat_repair
 from gmrp_alns.gmrp.model import Assignment, Instance
 from gmrp_alns.gmrp.objective import ObjectiveBreakdown, evaluate_objective
 from gmrp_alns.gmrp.state import SolutionState
@@ -85,6 +86,10 @@ def _validate_parameters(
     reaction_factor: float,
     restart_interval: int,
     warm_start_fraction: float,
+    restricted_repair_interval: int,
+    restricted_repair_time_limit_seconds: float,
+    restricted_repair_candidate_machines: int,
+    restricted_repair_variable_limit: int,
     destroy_operators: tuple[DestroyStrategy, ...],
     repair_operators: tuple[RepairStrategy, ...],
 ) -> None:
@@ -102,6 +107,14 @@ def _validate_parameters(
         raise ValueError("restart_interval must be non-negative")
     if not 0 <= warm_start_fraction < 1:
         raise ValueError("warm_start_fraction must be in [0, 1)")
+    if restricted_repair_interval < 0:
+        raise ValueError("restricted_repair_interval must be non-negative")
+    if restricted_repair_time_limit_seconds <= 0:
+        raise ValueError("restricted_repair_time_limit_seconds must be positive")
+    if restricted_repair_candidate_machines <= 0:
+        raise ValueError("restricted_repair_candidate_machines must be positive")
+    if restricted_repair_variable_limit <= 0:
+        raise ValueError("restricted_repair_variable_limit must be positive")
     if not destroy_operators or len(set(destroy_operators)) != len(destroy_operators):
         raise ValueError("destroy_operators must be non-empty and unique")
     if not repair_operators or len(set(repair_operators)) != len(repair_operators):
@@ -135,8 +148,12 @@ def adaptive_alns(
     cooling_rate: float = 0.995,
     restart_interval: int = 200,
     warm_start_fraction: float = 0.2,
+    restricted_repair_interval: int = 0,
+    restricted_repair_time_limit_seconds: float = 0.1,
+    restricted_repair_candidate_machines: int = 10,
+    restricted_repair_variable_limit: int = 200,
 ) -> SearchResult:
-    """Run strict-feasible Adaptive ALNS with SA, weights, and best restart."""
+    """Run strict-feasible Adaptive ALNS, optionally with periodic exact repair."""
 
     _validate_parameters(
         time_limit_seconds=time_limit_seconds,
@@ -148,6 +165,10 @@ def adaptive_alns(
         reaction_factor=reaction_factor,
         restart_interval=restart_interval,
         warm_start_fraction=warm_start_fraction,
+        restricted_repair_interval=restricted_repair_interval,
+        restricted_repair_time_limit_seconds=restricted_repair_time_limit_seconds,
+        restricted_repair_candidate_machines=restricted_repair_candidate_machines,
+        restricted_repair_variable_limit=restricted_repair_variable_limit,
         destroy_operators=destroy_operators,
         repair_operators=repair_operators,
     )
@@ -230,6 +251,8 @@ def adaptive_alns(
     )
     destroy_stats = {name: _MutableStats() for name in destroy_operators}
     repair_stats = {name: _MutableStats() for name in repair_operators}
+    restricted_stats = _MutableStats()
+    restricted_trace: list[dict[str, Any]] = []
     weight_trace: list[dict[str, Any]] = [
         {
             "iteration": 0,
@@ -260,9 +283,19 @@ def adaptive_alns(
     ):
         iterations += 1
         destroy_name = cast(DestroyStrategy, destroy_pool.select(rng))
-        repair_name = cast(RepairStrategy, repair_pool.select(rng))
+        use_restricted = bool(
+            restricted_repair_interval
+            and (iterations - 1) % restricted_repair_interval == 0
+        )
+        repair_name = (
+            "restricted-cpsat"
+            if use_restricted
+            else cast(RepairStrategy, repair_pool.select(rng))
+        )
         selected_destroy_stats = destroy_stats[destroy_name]
-        selected_repair_stats = repair_stats[repair_name]
+        selected_repair_stats = (
+            restricted_stats if use_restricted else repair_stats[cast(RepairStrategy, repair_name)]
+        )
         selected_destroy_stats.calls += 1
         selected_repair_stats.calls += 1
 
@@ -276,29 +309,61 @@ def adaptive_alns(
         selected_destroy_stats.wall_time_seconds += perf_counter() - destroy_started
 
         repair_started = perf_counter()
-        outcome = repair_removed(
-            instance,
-            original,
-            current.assignment,
-            removed,
-            strategy=repair_name,
-            deadline=deadline,
-            top_k=repair_top_k,
-            node_limit=repair_node_limit,
-            rng=rng if repair_name == "randomized" else None,
-        )
+        if use_restricted:
+            exact_outcome = restricted_cpsat_repair(
+                instance,
+                original,
+                current.assignment,
+                removed,
+                deadline=deadline,
+                time_limit_seconds=restricted_repair_time_limit_seconds,
+                candidate_machine_limit=restricted_repair_candidate_machines,
+                variable_limit=restricted_repair_variable_limit,
+                seed=seed + iterations,
+            )
+            outcome_assignment = exact_outcome.assignment
+            outcome_objective = exact_outcome.objective
+            outcome_evaluations = exact_outcome.branches
+            restricted_trace.append(
+                {
+                    "iteration": iterations,
+                    "status": exact_outcome.status,
+                    "improved": exact_outcome.improved,
+                    "assignment_variables": exact_outcome.assignment_variables,
+                    "branches": exact_outcome.branches,
+                    "conflicts": exact_outcome.conflicts,
+                    "best_bound": exact_outcome.best_bound,
+                    "solver_time_limit_seconds": exact_outcome.solver_time_limit_seconds,
+                    "wall_time_seconds": exact_outcome.wall_time_seconds,
+                }
+            )
+        else:
+            heuristic_outcome = repair_removed(
+                instance,
+                original,
+                current.assignment,
+                removed,
+                strategy=cast(RepairStrategy, repair_name),
+                deadline=deadline,
+                top_k=repair_top_k,
+                node_limit=repair_node_limit,
+                rng=rng if repair_name == "randomized" else None,
+            )
+            outcome_assignment = heuristic_outcome.assignment
+            outcome_objective = heuristic_outcome.objective
+            outcome_evaluations = heuristic_outcome.candidate_evaluations
         selected_repair_stats.wall_time_seconds += perf_counter() - repair_started
-        selected_repair_stats.candidate_evaluations += outcome.candidate_evaluations
-        candidate_evaluations += outcome.candidate_evaluations
+        selected_repair_stats.candidate_evaluations += outcome_evaluations
+        candidate_evaluations += outcome_evaluations
 
         reward = 0.0
-        if outcome.assignment is None or outcome.objective is None:
+        if outcome_assignment is None or outcome_objective is None:
             selected_destroy_stats.failures += 1
             selected_repair_stats.failures += 1
         else:
             previous_cost = current.total_cost
             previous_objective = current.objective
-            candidate_cost = outcome.objective.total_cost
+            candidate_cost = outcome_objective.total_cost
             accepted = annealing.accept(previous_cost, candidate_cost, rng)
             if accepted:
                 selected_destroy_stats.accepted += 1
@@ -308,10 +373,10 @@ def adaptive_alns(
                 selected_repair_stats.total_improvement += improvement
                 if candidate_cost > previous_cost:
                     accepted_worsening += 1
-                current = SolutionState(instance, original, outcome.assignment)
+                current = SolutionState(instance, original, outcome_assignment)
                 if candidate_cost < best_objective.total_cost:
-                    best_assignment = outcome.assignment
-                    best_objective = outcome.objective
+                    best_assignment = outcome_assignment
+                    best_objective = outcome_objective
                     time_to_best = perf_counter() - started
                     last_best_iteration = iterations
                     selected_destroy_stats.new_best += 1
@@ -334,7 +399,8 @@ def adaptive_alns(
                 )
 
         destroy_pool.reward(destroy_name, reward)
-        repair_pool.reward(repair_name, reward)
+        if not use_restricted:
+            repair_pool.reward(cast(RepairStrategy, repair_name), reward)
         annealing.cool()
 
         if iterations % segment_length == 0:
@@ -387,10 +453,19 @@ def adaptive_alns(
             final_weight=None,
             weight_updates=0,
         )
+    if restricted_repair_interval:
+        operator_stats["repair:restricted-cpsat"] = restricted_stats.freeze(
+            final_weight=None,
+            weight_updates=0,
+        )
     best_state = SolutionState(instance, original, best_assignment)
     wall_time = perf_counter() - started
     return build_result(
-        algorithm="adaptive-alns",
+        algorithm=(
+            "adaptive-alns-restricted"
+            if restricted_repair_interval
+            else "adaptive-alns"
+        ),
         state=best_state,
         initial=original,
         initial_cost=initial_cost,
@@ -435,6 +510,14 @@ def adaptive_alns(
                 "fraction": warm_start_fraction,
                 "iterations": warm_start_iterations,
                 "candidate_evaluations": warm_start_evaluations,
+            },
+            "restricted_repair": {
+                "enabled": bool(restricted_repair_interval),
+                "interval": restricted_repair_interval,
+                "time_limit_seconds": restricted_repair_time_limit_seconds,
+                "candidate_machine_limit": restricted_repair_candidate_machines,
+                "variable_limit": restricted_repair_variable_limit,
+                "calls": restricted_trace,
             },
         },
     )

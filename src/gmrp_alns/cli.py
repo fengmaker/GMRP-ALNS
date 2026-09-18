@@ -59,6 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
             "random-lns-greedy",
             "random-lns-regret",
             "adaptive-alns",
+            "adaptive-alns-restricted",
         ),
         default="vnd-first",
     )
@@ -77,6 +78,10 @@ def build_parser() -> argparse.ArgumentParser:
     solve_command.add_argument("--cooling-rate", type=float, default=0.995)
     solve_command.add_argument("--restart-interval", type=int, default=200)
     solve_command.add_argument("--warm-start-fraction", type=float, default=0.2)
+    solve_command.add_argument("--restricted-repair-interval", type=int, default=10)
+    solve_command.add_argument("--restricted-repair-time-limit", type=float, default=0.1)
+    solve_command.add_argument("--restricted-repair-candidate-machines", type=int, default=10)
+    solve_command.add_argument("--restricted-repair-variable-limit", type=int, default=200)
     solve_command.add_argument("--output", type=Path)
 
     gap_command = subparsers.add_parser("gap", help="classic OR-Library GAP track")
@@ -186,6 +191,7 @@ def _run_gmrp_solve(args: argparse.Namespace) -> int:
             **common,
         )
     else:
+        restricted = args.algorithm == "adaptive-alns-restricted"
         result = adaptive_alns(
             instance,
             original,
@@ -200,6 +206,14 @@ def _run_gmrp_solve(args: argparse.Namespace) -> int:
             cooling_rate=args.cooling_rate,
             restart_interval=args.restart_interval,
             warm_start_fraction=args.warm_start_fraction,
+            restricted_repair_interval=(
+                args.restricted_repair_interval if restricted else 0
+            ),
+            restricted_repair_time_limit_seconds=args.restricted_repair_time_limit,
+            restricted_repair_candidate_machines=(
+                args.restricted_repair_candidate_machines
+            ),
+            restricted_repair_variable_limit=args.restricted_repair_variable_limit,
             **common,
         )
     if args.output is not None:

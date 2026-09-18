@@ -35,3 +35,8 @@ the public API stabilizes.
   component traces exposed through the GMRP JSON result.
 - Frozen M5 paired-development and A/B feasibility scripts, complete official B-set provenance,
   and official-checker verification records.
+- Restricted CP-SAT repair with fixed-complement neighborhoods, bounded candidate domains and
+  assignment variables, full GMRP constraints/objective, single-worker local time limits, incumbent
+  hints, full-oracle write-back, and failure-safe fallback.
+- Periodic Restricted Repair integration for Adaptive ALNS, CLI controls, per-call solver telemetry,
+  exhaustive toy-neighborhood tests, and a frozen enable/disable M6 development ablation.

@@ -59,6 +59,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 - src/gmrp_alns/gap/：经典 GAP 模型、OR-Library 解析、CP-SAT 和启发式基线；
 - src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数、增量状态和 checker 适配；
 - src/gmrp_alns/search/：局部搜索、基础 LNS、Adaptive ALNS、destroy/repair、接受与权重；
+- src/gmrp_alns/exact/：受候选域、assignment 变量数和局部时限约束的 CP-SAT Repair；
 - tests/：单元测试与 CLI 集成测试；
 - data/toy/：可提交的小型官方格式实例；
 - data/raw/：下载的官方数据，默认不提交；
@@ -72,7 +73,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0～M5 已完成；
+- M0～M6 已完成；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
 - M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
 - M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
@@ -80,7 +81,10 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
   统一 seed/time limit、收敛轨迹、time-to-best、算子统计和 GMRP `solve` CLI；
 - M5 已实现五种 destroy、三种 strict-feasible repair、模拟退火、分段自适应权重、时限内
   relocate warm start、restart、历史最佳保护、权重历史和目标分量轨迹；
-- 49/49 测试通过，覆盖率 87%，Ruff 与严格 mypy 通过；
+- M6 已实现固定邻域外进程的 Restricted CP-SAT Repair，完整建模五类硬约束和五类目标，
+  限制候选机器、assignment 变量数、单次局部时限及单线程，并仅回写经全量 oracle 复核的
+  严格改善解；ALNS 支持周期调用和逐次求解遥测；
+- 55/55 测试通过，覆盖率 88%，Ruff 与严格 mypy 通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
 - 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
@@ -94,7 +98,11 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
   不能作为最终泛化结论；
 - Adaptive ALNS 一秒验收在 A1/A2 十个实例及 B1/B2 上均改善初始解并通过官方 checker；
   完整 B 数据的来源与 SHA-256 已记录，但其余 B 实例留待 M7 冻结实验；
-- 尚未实现 Restricted Repair；下一里程碑：M6 Restricted MIP/CP-SAT Repair。
+- M6 冻结开发消融在三实例、三 seed 的九组配对中相对关闭精确修复获得 5 胜 3 平 1 负，
+  汇总目标低 22,192,222；135 次局部求解全部满足 100 个 assignment 变量和 0.05 秒 solver
+  上限，83 次改善当前解，18 个输出均通过官方 checker；该结果不是 M7 benchmark；
+- B1 一秒安全烟测完成 11 次有界精确修复，最终成本 6,935,472,463 与官方 checker 一致；
+- 下一里程碑：M7 预注册完整 A/B 多 seed benchmark、聚合、绘图与技术报告。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
@@ -303,3 +311,33 @@ conflict/spread/dependency 及 2411 目标值如何使用这些字段。
 **变更与下一步：** 本轮不修改算法或里程碑状态，仅追加本日志；未运行测试，因为没有代码
 变更。用户理解第一层后，下一阅读层是 `parser.py` 与 `test_parser.py`，重点是整数流如何
 构造成这些领域对象，以及 parser 负责和不负责哪些验证。
+
+## QA-019｜完成 M6 Restricted CP-SAT Repair
+
+**日期：** 2026-09-18
+
+**用户请求：** “继续 M6，阅读 agent、README 等文件夹。”
+
+**执行结果：**
+
+- 按仓库约定完整恢复 `AGENTS.md`、`QA.md`、项目计划、ROADMAP、CHANGELOG、各级 README，
+  并复核 M5 搜索、CLI、测试与外部 checker 接口后再确定接入设计；
+- 新增 `exact/restricted_repair.py`：固定邻域外分配，保留每个移除进程的 incumbent 机器，
+  有界选择候选机器并建立 CP-SAT；模型覆盖普通/瞬时容量、conflict、spread、dependency 和
+  完整官方目标，使用单线程、显式 seed、局部截止时间、candidate 与 assignment 变量上限；
+- 求解状态为 unknown/infeasible、超时、变量不足、无改善或全量 oracle 拒绝时返回空结果，
+  不修改当前解；只有 Validator 与 Objective 复核后的严格改善才进入 ALNS；
+- `adaptive-alns-restricted` 在第 1 轮及其后固定间隔调用精确修复，输出每次 status、变量数、
+  branches、conflicts、bound、solver budget 和 wall time，并保留聚合算子统计；CLI 暴露四个
+  M6 限制参数；
+- 新增全部七个 toy 非空进程子集与穷举最优逐一对拍、失败回退、过期 deadline、ALNS 和 CLI
+  测试；最终 55/55 tests、88% coverage、Ruff、严格 mypy（28 个源文件）和 diff check 通过；
+- 新增冻结配置、A 组启用/关闭消融脚本及 `docs/m6_verification.md`。九组一秒配对为 5 胜
+  3 平 1 负，混合方法汇总成本低 22,192,222；135 次精确调用中 83 次改善当前解，所有上限
+  均满足，18 个最终解均通过官方 checker；
+- B1 一秒安全烟测进行了 11 次受限调用，最终成本 6,935,472,463，经官方 checker 验证；
+  同步 README、快速上手、复现/实验协议、结果边界、ROADMAP 和 CHANGELOG。
+
+**限制与下一步：** M6 消融是参与过调用时机调整的开发门，墙钟一秒结果有调度波动，不能
+证明 H4 的普遍收益；B1 也只是单次安全烟测。下一里程碑进入 M7：先冻结独立实例、至少五个
+seed、时间档、硬件/依赖/commit 和统计方案，再运行完整 A/B 实验、聚合、绘图与技术报告。
