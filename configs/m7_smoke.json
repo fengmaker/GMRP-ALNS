@@ -1,0 +1,18 @@
+{
+  "protocol": "Offline toy pipeline smoke; not benchmark evidence",
+  "instances": ["toy"],
+  "heldout_instances": [],
+  "seeds": [42],
+  "time_limits": [0.1],
+  "methods": ["initial", "alns", "restricted"],
+  "ablation_instances": ["toy"],
+  "ablation_methods": ["random-only", "no-restart", "greedy-only"],
+  "order_seed": 42,
+  "watchdog_grace_seconds": 30,
+  "budget_tolerance_seconds": 0.1,
+  "alns": {"max_iterations": 3, "warm_start_fraction": 0},
+  "restricted": {"restricted_repair_interval": 1,
+    "restricted_repair_time_limit_seconds": 0.05,
+    "restricted_repair_candidate_machines": 4,
+    "restricted_repair_variable_limit": 20}
+}

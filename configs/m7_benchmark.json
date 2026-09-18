@@ -1,0 +1,25 @@
+{
+  "protocol": "M7 v1: complete A/B short-budget study",
+  "instances": ["a1_1", "a1_2", "a1_3", "a1_4", "a1_5", "a2_1", "a2_2", "a2_3", "a2_4", "a2_5", "b_1", "b_2", "b_3", "b_4", "b_5", "b_6", "b_7", "b_8", "b_9", "b_10"],
+  "heldout_instances": ["b_3", "b_4", "b_5", "b_6", "b_7", "b_8", "b_9", "b_10"],
+  "seeds": [7, 42, 101, 202, 303],
+  "time_limits": [1.0],
+  "methods": ["initial", "relocate", "vnd", "random-lns", "alns", "restricted"],
+  "ablation_instances": ["a1_2", "a2_3", "b_3", "b_7"],
+  "ablation_methods": ["random-only", "no-restart", "greedy-only"],
+  "order_seed": 20260918,
+  "watchdog_grace_seconds": 120,
+  "budget_tolerance_seconds": 0.1,
+  "alns": {
+    "destroy_size": 10, "repair_top_k": 10, "repair_node_limit": 10000,
+    "segment_length": 25, "reaction_factor": 0.2,
+    "target_acceptance_probability": 0.5, "initial_worsening_fraction": 0.01,
+    "cooling_rate": 0.995, "restart_interval": 200, "warm_start_fraction": 0.2
+  },
+  "restricted": {
+    "restricted_repair_interval": 10,
+    "restricted_repair_time_limit_seconds": 0.05,
+    "restricted_repair_candidate_machines": 10,
+    "restricted_repair_variable_limit": 100
+  }
+}

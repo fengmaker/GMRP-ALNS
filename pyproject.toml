@@ -22,6 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+experiments = ["matplotlib>=3.9,<4", "psutil>=6,<8"]
 dev = [
   "mypy>=1.13",
   "pytest>=8.3",
@@ -56,4 +57,10 @@ mypy_path = "src"
 [[tool.mypy.overrides]]
 module = ["ortools.*"]
 follow_imports = "skip"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["matplotlib.*", "psutil", "numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
 ignore_missing_imports = true
