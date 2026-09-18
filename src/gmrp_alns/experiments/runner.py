@@ -61,7 +61,7 @@ def freeze(config_path: Path, output: Path, root: Path, checker: Path) -> dict[s
         "checker": checker.relative_to(root).as_posix(), "checker_sha256": digest(checker),
         "environment": environment(), "matrix": matrix(config),
         "timing": "solver call includes setup and final oracle; parsing/checker separate",
-        "memory": "fresh worker peak_wset on Windows; sampled RSS elsewhere; includes parsing",
+        "memory": "worker peak_wset (Windows) or sampled RSS; follows venv launcher children",
         "raw_projection": "best-so-far changes and final weights; no full state/weight history",
     }
     output.mkdir(parents=True, exist_ok=True)
@@ -124,8 +124,11 @@ def run(output: Path, root: Path, *, selected_instances: list[str] | None = None
             monitor = psutil.Process(process.pid)
             while process.poll() is None:
                 try:
-                    memory = monitor.memory_info()
-                    peak = max(peak, getattr(memory, "peak_wset", memory.rss))
+                    for observed in [monitor, *monitor.children(recursive=True)]:
+                        if not observed.name().lower().startswith("python"):
+                            continue
+                        memory = observed.memory_info()
+                        peak = max(peak, getattr(memory, "peak_wset", memory.rss))
                 except psutil.NoSuchProcess:
                     pass
                 try:
@@ -149,7 +152,8 @@ def run(output: Path, root: Path, *, selected_instances: list[str] | None = None
         payload.update(row)
         payload.update({
             "manifest_sha256": manifest_hash, "completed_at": datetime.now(UTC).isoformat(),
-            "process_seconds": perf_counter() - started, "peak_memory_mb": peak / 2**20,
+            "process_seconds": perf_counter() - started,
+            "peak_memory_mb": max(peak / 2**20, payload.get("worker_peak_memory_mb", 0)),
             "worker_stderr": error_path.read_text(encoding="utf-8"),
             "git_commit": manifest["git_commit"],
         })

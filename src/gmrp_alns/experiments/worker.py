@@ -10,6 +10,8 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
+import psutil
+
 from gmrp_alns.gmrp.checker import run_official_checker
 from gmrp_alns.gmrp.objective import evaluate_objective
 from gmrp_alns.gmrp.parser import parse_assignment, parse_instance, write_assignment
@@ -97,6 +99,8 @@ def execute(job: dict[str, Any], root: Path, solution: Path) -> dict[str, Any]:
         "checker_stderr": checked.stderr, "checker_returncode": checked.returncode,
         "status": "ok" if official_valid else "checker_failed",
     })
+    memory = psutil.Process().memory_info()
+    payload["worker_peak_memory_mb"] = getattr(memory, "peak_wset", memory.rss) / 2**20
     return payload
 
 

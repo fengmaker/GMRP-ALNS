@@ -42,6 +42,13 @@ Each observation gets a fresh worker process; only one observation runs at a tim
 library thread environment variables and CP-SAT workers are fixed to one. No CPU affinity or
 exclusive machine reservation is claimed.
 
+Revision note: the first 45 completed observations under `m7-v1` were retained after detecting
+that parent-only memory sampling measured the Windows venv launcher. Revision 2 follows Python
+children and cross-checks with worker self-reported high-water memory. Solver code, method settings,
+matrix and order are unchanged. The complete matrix is rerun as `m7-v2`; v1 is excluded from
+quality comparisons and archived as an interrupted measurement attempt. No cost-based tuning
+was performed between these runs.
+
 Parsing is measured separately. Externally measure the complete solver call including state
 construction, warm start, exact repair and its final oracle handoff. Record subsequent independent
 validation, official checker time and whole process time separately. Existing solver deadlines

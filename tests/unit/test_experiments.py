@@ -85,6 +85,7 @@ def test_worker_checks_cost_and_records_end_to_end_time(
     assert result["status"] == "ok"
     assert result["best_cost"] == 2411
     assert result["solver_seconds"] >= result["wall_time_seconds"]
+    assert result["worker_peak_memory_mb"] > 0
     assert "assignment" not in result
     assert (tmp_path / "candidate.sol").exists()
     json.dumps(result)
