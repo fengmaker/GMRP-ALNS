@@ -60,6 +60,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 - src/gmrp_alns/gmrp/：领域模型、解析、验证、目标函数、增量状态和 checker 适配；
 - src/gmrp_alns/search/：局部搜索、基础 LNS、Adaptive ALNS、destroy/repair、接受与权重；
 - src/gmrp_alns/exact/：受候选域、assignment 变量数和局部时限约束的 CP-SAT Repair；
+- src/gmrp_alns/experiments/：manifest 冻结、隔离 worker、续跑、聚合、绘图与归档；
 - tests/：单元测试与 CLI 集成测试；
 - data/toy/：可提交的小型官方格式实例；
 - data/raw/：下载的官方数据，默认不提交；
@@ -73,7 +74,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 
 ## 4. 当前已验证状态
 
-- M0～M7 已完成；
+- M0～M8 已完成，当前版本为 v1.0.0 research release；
 - M1 官方格式 Parser、完整 Validator、完整 Objective、JSON CLI 和 checker adapter 完成；
 - M2 已实现 OR-Library Parser、CP-SAT、cost/regret greedy、repair、relocate/swap 和 GAP CLI；
 - M3 已实现 `SolutionState`、relocate/swap 增量合法性与成本、apply/undo、预筛和 Top-K；
@@ -84,7 +85,7 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
 - M6 已实现固定邻域外进程的 Restricted CP-SAT Repair，完整建模五类硬约束和五类目标，
   限制候选机器、assignment 变量数、单次局部时限及单线程，并仅回写经全量 oracle 复核的
   严格改善解；ALNS 支持周期调用和逐次求解遥测；
-- 60/60 测试通过，覆盖率 82%，Ruff 与严格 mypy（34 个源文件）通过；
+- 61/61 测试通过，覆盖率 82%，Ruff 与严格 mypy（34 个源文件）通过；
 - 官方 A1/A2 十个初始解全部被自研 Validator 判定可行；
 - 十个实例的自研目标值与官方 checker 完全一致；
 - 官方 OR-Library `gap1` 五个实例的 CP-SAT 最优值全部匹配参考值；
@@ -109,13 +110,18 @@ Validator 和完整 Objective 是后续增量状态、局部搜索与 ALNS 的�
   Restricted 为 8.994%，对 ALNS 配对为 32 胜 35 平 33 负。208/660 次完整 solver 调用超过
   1.1 秒容差，held-out B3～B10 的 ALNS/Restricted 没有双方都在容差内的配对，因此不能
   表述为严格一秒性能结论；完整限制见 `docs/m7_verification.md`；
-- 下一里程碑：M8 中英文发布摘要、架构/流程图、演示材料、发布检查与证据化项目表述。
+- M8 已完成中英文 README、Mermaid 架构/求解/实验流程、一条命令离线 demo、2～3 分钟
+  录屏脚本、v1.0.0 release notes/发布审计，以及全部数字可定位的中英文简历表述与面试问答；
+- v1.0.0 wheel 构建与内容审计通过，包内只有源码、入口、元数据和 MIT License；仓库无超过
+  5 MiB 的文件，三个二进制文件均为可解释的 M7 PNG 图，无下载数据、checker、密钥或构建物；
+- 当前交付点：v1.0.0 本地发布提交与 annotated tag 已创建；仍由用户自行 push main 与 tag。后续
+  可选研究扩展为优化 B 实例初始化并预注册 10/60/300 秒多机实验，不属于 v1.0.0 范围。
 
 不得伪造性能结果；外部数据和第三方材料默认不提交，只提交来源、脚本和哈希。
 
 ## 5. Git 与开发环境
 
-- 本地仓库：D:\GAP；
+- 本地仓库：D:\Route\GAP（此前位于 D:\GAP）；
 - 当前主分支：main；
 - 私有远程仓库：https://github.com/fengmaker/GMRP-ALNS；
 - origin 使用 HTTPS，main 已跟踪 origin/main；
@@ -392,3 +398,59 @@ seed、时间档、硬件/依赖/commit 和统计方案，再运行完整 A/B �
 **限制与下一步：** M7 仅覆盖单机、一秒请求预算，无 BKS gap、竞赛程序对比、显著性检验或
 10/60/300 秒档；208 个超容差结果持续保留。下一里程碑为 M8 发布整理；按既定分工由助手
 本地 commit，用户自行 push。
+
+## QA-022｜完成 M8 与 v1.0.0 本地发布交付
+
+**日期：** 2026-09-18
+
+**用户请求：** “继续”，即按路线图进入 M8 GitHub 发布与证据化项目材料。
+
+**执行结果：**
+
+- 将包版本、fallback version 与 `CITATION.cff` 更新为 1.0.0，补齐仓库 URL、Python
+  3.12/3.13 classifier 和项目链接；CHANGELOG 冻结 2026-09-18 的 1.0.0 条目，ROADMAP 与
+  Definition of Done 全部完成；
+- 新增 `README_zh.md`，重构英文 README 顶部，加入问题定位、核心证据、负面结果边界、
+  Mermaid 架构图和对新用户有效的一条命令快速开始；
+- 新增 `docs/architecture.md` 的组件图、求解流程图和实验 sequence diagram，说明模块职责、
+  oracle 边界、失败保留和数据依赖方向；
+- 新增 `scripts/demo.py` 与集成测试：单条命令离线完成 GMRP parse/validate/score、固定
+  seed/iteration 的 Restricted ALNS、候选再验证和 GAP 精确参考值复现；实测输出 GMRP 2411、
+  GAP 8、`status=ok`；
+- 新增 `docs/demo_video_zh.md` 的约 2 分 40 秒录屏分镜与旁白，新增
+  `docs/portfolio_zh.md` 的中英文简历 bullet、数字证据表和十组面试问答；视频二进制不入库；
+- 新增 v1.0.0 release notes 与发布审计；wheel 为 66,518 bytes、40 个条目，version 1.0.0，
+  不包含外部数据、结果 scratch、虚拟环境或绝对工作路径；`pip check` 通过；
+- 发布内容审计 117 个 tracked/pending 文件，无超过 5 MiB 文件；唯一二进制为三张 M7 PNG，
+  无可执行文件、checker、下载数据或密钥候选；本地 Markdown 链接全部可解析；第三方说明
+  补充 psutil 与 Matplotlib；
+- 最终质量门为 61/61 tests、82% coverage、Ruff、严格 mypy（34 个源文件）、demo、wheel
+  内容审计和 `git diff --check` 全部通过。
+
+**交付约定与后续：** 本轮最终提交后在同一提交创建 annotated `v1.0.0` tag；不执行 push。
+用户需分别推送 `main` 和 `v1.0.0`。未来优化与更长预算实验属于 v1.1+ 候选范围，必须重新
+预注册，不能反向改写 M7 结论。
+
+## QA-023｜恢复中断的 v1.0.0 发布收尾
+
+**日期：** 2026-09-20
+
+**用户请求：** 阅读 AGENTS 和 README 等文档；此前因 token 额度中断，继续项目。
+
+**执行结果：**
+
+- 复核 `AGENTS.md`、`QA.md`、计划、路线图、变更日志和中英文 README，确认 M0～M8 的实现
+  与发布材料已备齐，待完成的是本地提交与 annotated tag；
+- 工作目录迁到 `D:\Route\GAP` 后，修正本地被忽略的虚拟环境 editable `.pth` 路径；旧缓存
+  写权限不影响源码，验证时使用临时 coverage/mypy 缓存和 Ruff `--no-cache`；
+- 将 CHANGELOG、CITATION 和发布审计日期对齐到实际发布日，并把录屏脚本中的自动测试数量
+  修正为 61；既有 QA-022 作为 9 月 18 日的历史记录保留；
+- 在当前工作树复跑 61/61 tests、82% coverage、Ruff、严格 mypy（34 个源文件）、离线 demo
+  （GMRP 2411、GAP 8）、`pip check` 与 `git diff --check`，均通过；
+- 从干净的临时构建目录重建 v1.0.0 wheel，核对 40 个条目仅含源码、入口、元数据和许可证；
+  当前 wheel 为 66,528 bytes，仓库文件重新盘点为 119 个、无超过 5 MiB 文件，修正 QA-022
+  中的旧盘点数字；M7 归档 11 个 SHA-256 全部复算一致；完成本地发布提交及同一提交上的
+  annotated tag。
+
+**限制与下一步：** 未重新运行外部 A/B benchmark，也未录制视频；M7 已冻结结果保持不变。
+按既定分工由用户推送 `main` 和 `v1.0.0`；之后的性能优化与长预算实验需另行预注册。

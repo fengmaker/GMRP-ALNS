@@ -26,4 +26,6 @@ The detailed milestones and acceptance criteria live in `docs/project_plan.md`.
   short-budget matrix, isolated/resumable workers, official-checker audit, raw JSONL and aggregate
   CSV/JSON, paired held-out/ablation analysis, generated figures, separate profile, checksums, and
   documented timing limitations and negative results.
-- [ ] **M8 — public release and evidence-backed project summary.**
+- [x] **M8 — public release and evidence-backed project summary:** English/Chinese entry points,
+  architecture and execution diagrams, one-command offline demo, 2–3 minute recording script,
+  v1.0.0 metadata/release notes, evidence-linked resume/interview material, and release audit.

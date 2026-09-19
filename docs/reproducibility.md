@@ -5,6 +5,17 @@ incremental-state checks. A clean Python 3.11+ environment can install the packa
 `pip install -e ".[dev]"`, then run `pytest`, `ruff check .`, and `mypy`. M7 report generation and
 worker-memory measurement additionally require `pip install -e ".[dev,experiments]"`.
 
+For the v1.0 release smoke test, one command runs the complete offline toy path and asserts every
+expected result:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/demo.py
+```
+
+It parses, validates and scores GMRP; runs a fixed-seed/fixed-iteration Restricted ALNS search;
+revalidates the emitted candidate; and proves the GAP toy reference optimum. Temporary output is
+created outside the repository and removed automatically.
+
 Official-data cross-validation is intentionally separate because benchmark files and the checker
 are external artifacts. Record their exact source URL, retrieval timestamp, SHA-256 digest, and
 tool output. Run the checker through `gmrp_alns.gmrp.checker.run_official_checker`; do not patch

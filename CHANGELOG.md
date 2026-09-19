@@ -5,6 +5,8 @@ the public API stabilizes.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-20
+
 ### Added
 
 - Initial Python package, project metadata, quality configuration, and GitHub Actions workflow.
@@ -46,3 +48,11 @@ the public API stabilizes.
 - Complete 660-observation A/B short-budget archive with raw JSONL, aggregate CSV/JSON, operator
   telemetry, paired held-out/ablation analysis, generated PNG figures, SHA-256 checksums, a separate
   cProfile record, and a technical verification report that retains overruns and negative results.
+- English and Chinese v1.0 entry points, Mermaid architecture/solver/experiment diagrams, an
+  offline one-command toy demo, a timed recording script, release notes, and evidence-linked
+  resume/interview material.
+
+### Changed
+
+- Declared package version 1.0.0, completed the M0–M8 roadmap, and replaced pre-alpha messaging
+  with an explicitly bounded research-release status.

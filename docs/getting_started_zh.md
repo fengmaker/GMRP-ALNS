@@ -8,11 +8,13 @@
 4. 如何在几分钟内把项目运行起来？
 5. 应该按什么顺序阅读代码，哪些代码最核心？
 
-当前仓库已完成 M0～M7：除了 GMRP 的官方格式解析、完整验证器、完整目标函数和增量
+当前仓库已完成 M0～M8，并形成 v1.0.0 研究发布：除了 GMRP 的官方格式解析、完整验证器、
+完整目标函数和增量
 `relocate`/`swap` 状态，现在还提供 First/Best Improvement、Relocate + Swap VND、Random
 LNS，以及包含五种 destroy、三种 repair、模拟退火、自适应权重和 restart 的 Adaptive
 ALNS；Restricted CP-SAT Repair 可在有界局部邻域内周期性精确优化。M7 已完成冻结的
-660 次 A/B 短预算实验、原始记录、聚合图表和技术报告；下一阶段是 M8 发布整理。
+660 次 A/B 短预算实验、原始记录、聚合图表和技术报告，以及中英文入口、架构图、离线演示、
+release notes 和证据化项目材料。
 
 ---
 
@@ -355,22 +357,31 @@ agent 和 job 索引仍从 0 开始。
 
 ## 6. 五分钟快速上手
 
-以下命令以 Windows PowerShell 和仓库路径 `D:\GAP` 为例。使用 Python 模块入口可以避免
-未激活虚拟环境时找不到 `gmrp-alns` 可执行文件。
+以下命令假设 Windows PowerShell 已位于仓库根目录。使用 Python 模块入口可以避免未激活
+虚拟环境时找不到 `gmrp-alns` 可执行文件。
 
 ### 6.1 创建环境并安装
 
 如果 `.venv` 已存在，可以跳过第一条：
 
 ```powershell
-cd D:\GAP
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 ```
 
 如需生成 M7 图表并测量 worker 内存，改为安装 `.[dev,experiments]`。
 
-### 6.2 运行质量检查
+### 6.2 一条命令运行发布演示
+
+```powershell
+.\.venv\Scripts\python.exe scripts/demo.py
+```
+
+该命令只使用已提交的 toy 数据，依次完成 GMRP parse/validate/score、固定 seed 与迭代数的
+Restricted ALNS 搜索、候选解再验证，以及 GAP 精确参考值复现。成功时输出
+`"status": "ok"`、GMRP 成本 `2411` 和 GAP 成本 `8`，临时解文件不会留在仓库。
+
+### 6.3 运行质量检查
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
@@ -378,10 +389,10 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m mypy
 ```
 
-当前 M7 基线是 60 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
+当前 v1.0.0 基线是 61 项测试通过；测试数量以后可能增加，因此应以命令是否全部通过为准，而不是
 把固定数量写进自动化判断。
 
-### 6.3 跑通 GMRP toy
+### 6.4 跑通 GMRP toy
 
 ```powershell
 .\.venv\Scripts\python.exe -m gmrp_alns parse data/toy/model_toy.txt
@@ -415,7 +426,7 @@ python -m venv .venv
 路径时，同时固定 `--seed` 和 `--max-iterations`；单靠墙钟时限可能因机器速度产生不同的
 截止迭代，耗时字段本身也不要求逐字节相同。
 
-### 6.4 跑通 GAP toy
+### 6.5 跑通 GAP toy
 
 ```powershell
 .\.venv\Scripts\python.exe -m gmrp_alns gap parse `
@@ -431,7 +442,7 @@ python -m venv .venv
 
 预期：`feasible=true`、`optimal=true`、`best_cost=8`、`matches_reference=true`。
 
-### 6.5 准备外部公开数据
+### 6.6 准备外部公开数据
 
 外部实例默认下载到被 Git 忽略的 `data/raw/`，来源和哈希写入可提交的 manifest：
 
@@ -804,7 +815,7 @@ results/m7/            已审计并提交的 M7 原始投影、汇总、图表�
 
 ## 14. 继续开发时应守住的边界
 
-实现 M8 及之后功能时，继续保持以下依赖方向：
+实现 v1.0.0 之后的扩展时，继续保持以下依赖方向：
 
 ```text
 CLI / experiment scripts

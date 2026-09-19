@@ -4,22 +4,30 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gmrp-alns"
-version = "0.1.0"
+version = "1.0.0"
 description = "Reproducible solvers and validators for the ROADEF/EURO 2012 Machine Reassignment Problem"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "GMRP-ALNS contributors" }]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Mathematics",
 ]
 dependencies = [
   "ortools>=9.10,<10",
 ]
+
+[project.urls]
+Homepage = "https://github.com/fengmaker/GMRP-ALNS"
+Repository = "https://github.com/fengmaker/GMRP-ALNS"
+Documentation = "https://github.com/fengmaker/GMRP-ALNS/tree/main/docs"
+Issues = "https://github.com/fengmaker/GMRP-ALNS/issues"
 
 [project.optional-dependencies]
 experiments = ["matplotlib>=3.9,<4", "psutil>=6,<8"]

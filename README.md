@@ -1,5 +1,7 @@
 # GMRP-ALNS
 
+English | [简体中文](README_zh.md)
+
 GMRP-ALNS is a reproducible research implementation for the
 [ROADEF/EURO Challenge 2012 Machine Reassignment Problem](https://roadef.org/challenge/2012/en/).
 It combines an independently implemented validator and objective evaluator with an incremental
@@ -8,11 +10,10 @@ Repair. A preregistered, fully traceable A/B short-budget study records both pos
 findings; it does not claim competition-level performance.
 A classic Generalized Assignment Problem (GAP) track provides a smaller exact and heuristic baseline.
 
-> **Status:** pre-alpha, M0–M7 complete. The GMRP parser, full validator/objective,
+> **Status:** v1.0.0 research release, M0–M8 complete. The GMRP parser, full validator/objective,
 > incremental relocate/swap state, first/best local search, VND, random-removal LNS, Adaptive
 > ALNS, periodic Restricted CP-SAT Repair, and the classic GAP exact/heuristic track are present.
-> M7's frozen 660-observation study, raw archive, figures and technical verification are complete;
-> M8 release packaging remains.
+> M7's frozen 660-observation study, raw archive, figures and technical verification are complete.
 
 ## Scope
 
@@ -29,29 +30,81 @@ GAP track supports the OR-Library format, CP-SAT,
 cost/regret construction, repair, relocate, and swap. It deliberately does not copy a competition
 entry or claim unmeasured performance.
 
+## Evidence at a glance
+
+| Evidence | Verified result | Trace |
+|---|---|---|
+| Official cross-check | All ten A1/A2 initial feasibility and objective values match the checker | `docs/m1_verification.md` |
+| Incremental correctness | 10,000 seeded legal moves match the full oracle, including undo | `docs/m2_m3_verification.md` |
+| GAP exact baseline | All five OR-Library `gap1` reference values reproduced | `docs/m2_m3_verification.md` |
+| Frozen M7 study | 660/660 returned assignments are project-valid and official-valid | `results/m7/records.jsonl` |
+| M7 mean improvement | Relocate 12.032%, VND 12.008%, ALNS 9.126%, Restricted 8.994% | `results/m7/summary.json` |
+| Timing limitation | 208/660 solver calls exceed the preregistered 1.1-second tolerance | `docs/m7_verification.md` |
+
+The short-budget result is intentionally negative for added complexity: Relocate and VND
+outperform ALNS on this host at a requested one-second budget, while Restricted Repair is nearly
+neutral. It is not evidence about longer budgets or competition-level performance.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    I[Model + initial assignment] --> P[Strict parser]
+    P --> D[Domain model]
+    D --> V[Full Validator / Objective]
+    D --> S[Incremental SolutionState]
+    S --> H[Relocate / VND / LNS / ALNS]
+    H <--> X[Restricted CP-SAT Repair]
+    H --> C[Candidate assignment]
+    C --> V
+    V --> O[Solution + JSON telemetry]
+    O --> K[Official checker]
+
+    F[Frozen manifest] --> W[Isolated workers]
+    W --> P
+    K --> W
+    W --> R[Raw records + report + checksums]
+```
+
+The incremental engine supplies speed; the independent full validator and objective remain the
+correctness authority. See [Architecture and execution flows](docs/architecture.md) for module,
+solver and experiment diagrams.
+
 ## Quick start
 
 Python 3.11 or newer is required.
 
-```bash
+```powershell
 python -m venv .venv
-.venv/Scripts/python -m pip install -e ".[dev]"  # Windows PowerShell
-.venv/Scripts/python -m pytest
-.venv/Scripts/python -m ruff check .
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe scripts/demo.py
 ```
+
+The one-command demo uses only committed toy data. It parses, validates and scores GMRP; runs a
+fixed-seed/fixed-iteration Restricted ALNS search; revalidates the written candidate; and proves
+the bundled GAP optimum. A successful run reports `"status": "ok"`, GMRP cost `2411`, and GAP
+cost `8`. On macOS/Linux, use `./.venv/bin/python` in place of the Windows Python path.
+Later snippets that start with `python` assume the virtual environment is activated; otherwise use
+the explicit interpreter path shown above.
 
 Run the bundled official-format toy example:
 
-```bash
-gmrp-alns parse data/toy/model_toy.txt
-gmrp-alns validate data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
-gmrp-alns score data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
-gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
+```powershell
+.\.venv\Scripts\python.exe -m gmrp_alns parse data/toy/model_toy.txt
+.\.venv\Scripts\python.exe -m gmrp_alns validate `
+  data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
+.\.venv\Scripts\python.exe -m gmrp_alns score `
+  data/toy/model_toy.txt data/toy/assignment_toy.txt data/toy/solution_toy.txt
+.\.venv\Scripts\python.exe -m gmrp_alns solve `
+  data/toy/model_toy.txt data/toy/assignment_toy.txt `
   --algorithm adaptive-alns --time-limit 2 --seed 42 --output candidate.sol
-gmrp-alns solve data/toy/model_toy.txt data/toy/assignment_toy.txt \
+.\.venv\Scripts\python.exe -m gmrp_alns solve `
+  data/toy/model_toy.txt data/toy/assignment_toy.txt `
   --algorithm adaptive-alns-restricted --time-limit 2 --seed 42 --output candidate-m6.sol
-gmrp-alns gap parse data/toy/gap_toy.txt --sense minimize
-gmrp-alns gap solve data/toy/gap_toy.txt --sense minimize --algorithm exact --reference-value 8
+.\.venv\Scripts\python.exe -m gmrp_alns gap parse `
+  data/toy/gap_toy.txt --sense minimize
+.\.venv\Scripts\python.exe -m gmrp_alns gap solve `
+  data/toy/gap_toy.txt --sense minimize --algorithm exact --reference-value 8
 ```
 
 The toy optimized assignment has official example cost `2411`. Commands emit JSON so they
@@ -72,6 +125,7 @@ traceable to its JSONL/CSV/JSON files and checksums.
 - [Project knowledge and conversation log](QA.md)
 - [Project plan](docs/project_plan.md)
 - [Mathematical model](docs/mathematical_model.md)
+- [Architecture and execution flows](docs/architecture.md)
 - [Experiment protocol](docs/experiment_protocol.md)
 - [Reproducibility](docs/reproducibility.md)
 - [M1 verification record](docs/m1_verification.md)
@@ -82,6 +136,10 @@ traceable to its JSONL/CSV/JSON files and checksums.
 - [M7 preregistration](docs/m7_protocol.md)
 - [M7 verification and interpretation](docs/m7_verification.md)
 - [M7 generated report](results/m7/report.md)
+- [v1.0.0 release notes](docs/release_notes_v1.0.0.md)
+- [v1.0.0 release audit](docs/release_audit_v1.0.0.md)
+- [2–3 minute demo recording script](docs/demo_video_zh.md)
+- [Evidence-backed resume and interview material](docs/portfolio_zh.md)
 - [Roadmap](ROADMAP.md)
 - [Third-party sources](THIRD_PARTY.md)
 

@@ -995,21 +995,24 @@ gmrp-alns experiment report --input results/runs --output results/report
 
 项目 v1.0 只有同时满足以下条件才算完成：
 
-- [ ] 官方 A/B 实例能够自动下载或按文档准备。
-- [ ] 官方模型和解文件能够正确解析。
-- [ ] 自研 validator 覆盖全部硬约束。
-- [ ] 自研目标值与官方 checker 一致。
-- [ ] GAP 小实例精确模型能复现参考值。
-- [ ] GMRP relocate 与 swap 支持增量成本、apply、undo。
-- [ ] 增量值经过大规模随机对拍。
-- [ ] 至少完成 VND、基础 LNS 和 Adaptive ALNS。
-- [ ] 所有最终输出都通过官方 checker。
-- [ ] 完成固定时限、固定种子、多次重复实验。
-- [ ] 完成至少四项消融实验。
-- [ ] README 中有问题、模型、算法、快速开始、结果和限制。
-- [ ] 一条命令能运行 toy demo 和小规模回归实验。
-- [ ] 仓库有测试、CI、许可证、第三方声明和引用信息。
-- [ ] 简历描述中的全部量化数字能够从仓库结果复现。
+- [x] 官方 A/B 实例能够自动下载或按文档准备。
+- [x] 官方模型和解文件能够正确解析。
+- [x] 自研 validator 覆盖全部硬约束。
+- [x] 自研目标值与官方 checker 一致。
+- [x] GAP 小实例精确模型能复现参考值。
+- [x] GMRP relocate 与 swap 支持增量成本、apply、undo。
+- [x] 增量值经过大规模随机对拍。
+- [x] 至少完成 VND、基础 LNS 和 Adaptive ALNS。
+- [x] 所有最终输出都通过官方 checker。
+- [x] 完成固定时限、固定种子、多次重复实验。
+- [x] 完成至少四项消融实验。
+- [x] README 中有问题、模型、算法、快速开始、结果和限制。
+- [x] 一条命令能运行 toy demo 和小规模回归实验。
+- [x] 仓库有测试、CI、许可证、第三方声明和引用信息。
+- [x] 简历描述中的全部量化数字能够从仓库结果复现。
+
+v1.0.0 的对应证据入口为 `README.md`、`README_zh.md`、`docs/architecture.md`、
+`docs/m7_verification.md`、`docs/portfolio_zh.md`、`scripts/demo.py` 与 `results/m7/`。
 
 ---
 
@@ -1172,4 +1175,3 @@ CP-SAT/HiGHS Repair。记录每个算子的调用、成功、增益和耗时，�
 + 有业务含义的邻域算子
 + 公平、完整、可复现的实验
 ```
-
